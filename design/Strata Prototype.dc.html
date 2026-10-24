@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="strata-data.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#14171d}
+body{font-family:'Anuphan',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accentText,#0B7A52);text-decoration:none}
+a:hover{text-decoration:underline}
+button,input,select,textarea{font-family:inherit}
+[data-theme="light"]{--bg:#F5F3ED;--surface:#FFFFFF;--surface2:#EFECE4;--ink:#0A1020;--ink2:#353D4F;--muted:#5F6676;--line:#E6E2D8;--line2:#D4CFC2;--accent:#6EE7B7;--accentText:#0B7A52;--accentSoft:#DCF6EA;--warn:#9A5800;--warnSoft:#FBEBD1;--danger:#B42318;--dangerSoft:#FBE4E1;--info:#2D5F8F;--infoSoft:#E2ECF6;--bar:#CFDCD4;--paper:#FFFFFF;color-scheme:light}
+[data-theme="dark"]{--bg:#0A1020;--surface:#111A2C;--surface2:#19233A;--ink:#F3F0E9;--ink2:#CDD0D9;--muted:#929BAE;--line:#212B43;--line2:#2E3A57;--accent:#6EE7B7;--accentText:#6EE7B7;--accentSoft:rgba(110,231,183,.13);--warn:#F4B65A;--warnSoft:rgba(244,182,90,.13);--danger:#FA8072;--dangerSoft:rgba(250,128,114,.13);--info:#8EB9E8;--infoSoft:rgba(142,185,232,.13);--bar:#263552;--paper:#FFFFFF;color-scheme:dark}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:rgba(128,128,128,.28);border-radius:10px;border:2px solid transparent;background-clip:padding-box}
+</style>
+</helmet>
+<div style="height:100vh;display:flex;flex-direction:column;background:#14171d;color:#E8E6E1;font-family:'Anuphan',system-ui,sans-serif">
+<div style="flex:none;min-height:52px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:8px 16px;border-bottom:1px solid #262a33;font-size:13px">
+<div style="display:flex;align-items:center;gap:8px;font-weight:600"><span style="font:500 10px/1 'JetBrains Mono',monospace;padding:4px 6px;border-radius:4px;background:#6EE7B7;color:#0A1020">PROTOTYPE</span>Strata-softwareservice</div>
+<select value="{{ screen }}" onChange="{{ onScreenSelect }}" style="height:32px;padding:0 10px;border-radius:8px;background:#1f232b;color:#E8E6E1;border:1px solid #323844;font-size:13px">
+<sc-for list="{{ screenOpts }}" as="o" hint-placeholder-count="1"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+</select>
+<div style="flex:1"></div>
+<div style="display:flex;padding:3px;gap:2px;background:#1f232b;border-radius:9px"><sc-for list="{{ devTabs }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="height:26px;padding:0 10px;border:none;border-radius:6px;font-size:12.5px;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div>
+<div style="display:flex;padding:3px;gap:2px;background:#1f232b;border-radius:9px"><sc-for list="{{ themeTabs }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="height:26px;padding:0 10px;border:none;border-radius:6px;font-size:12.5px;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div>
+<div style="display:flex;padding:3px;gap:2px;background:#1f232b;border-radius:9px"><sc-for list="{{ langTabs }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="height:26px;padding:0 10px;border:none;border-radius:6px;font-size:12.5px;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for></div>
+</div>
+<div style="flex:1;min-height:0;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:{{ L.stagePad }}">
+<div data-theme="{{ theme }}" style="position:relative;overflow:hidden;flex:none;width:{{ L.frameW }};height:{{ L.frameH }};max-width:100%;border-radius:{{ L.frameR }};box-shadow:{{ L.frameShadow }};background:var(--bg);color:var(--ink);font-family:'Anuphan',system-ui,sans-serif;font-size:14px;line-height:1.5;font-feature-settings:'tnum'">
+
+<sc-if value="{{ isPublic }}" hint-placeholder-val="{{ true }}">
+<div ref="{{ scroller }}" style="position:absolute;inset:0;overflow:auto">
+<header style="position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)">
+<div style="max-width:1200px;margin:0 auto;padding:14px {{ L.pad }};display:flex;align-items:center;gap:28px">
+<button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;border:none;background:none;padding:0;cursor:pointer;color:var(--ink)">{{ logo }}<span style="font-size:16px;font-weight:700;letter-spacing:-.01em">Strata<span style="font-weight:400;color:var(--muted)">-softwareservice</span></span></button>
+<sc-if value="{{ notMobile }}"><nav style="display:flex;gap:22px;font-size:14px"><button onClick="{{ goHome }}" style="border:none;background:none;padding:0;cursor:pointer;color:var(--ink2);font-size:14px">{{ t.features }}</button><button onClick="{{ goPricing }}" style="border:none;background:none;padding:0;cursor:pointer;color:var(--ink2);font-size:14px">{{ t.pricing }}</button><span style="color:var(--ink2)">{{ t.about }}</span><span style="color:var(--ink2)">{{ t.contact }}</span></nav></sc-if>
+<div style="flex:1"></div>
+<sc-if value="{{ notMobile }}"><button onClick="{{ goLogin }}" style="border:none;background:none;cursor:pointer;color:var(--ink);font-size:14px;font-weight:500">{{ t.login }}</button></sc-if>
+<button onClick="{{ goRegister }}" style="height:38px;padding:0 16px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer">{{ t.startFree }}</button>
+</div>
+</header>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<section style="max-width:1200px;margin:0 auto;padding:{{ L.heroPad }} {{ L.pad }};display:flex;flex-wrap:wrap;gap:56px;align-items:center">
+<div style="flex:1 1 440px;min-width:0;display:flex;flex-direction:column;gap:22px">
+<span style="font-size:13px;font-weight:500;color:var(--accentText)">{{ t.heroKicker }}</span>
+<h1 style="margin:0;font-size:{{ L.h1 }};line-height:1.08;font-weight:600;letter-spacing:-.025em;text-wrap:balance">{{ t.heroTitle }}</h1>
+<p style="margin:0;font-size:17px;line-height:1.6;color:var(--ink2);max-width:520px;text-wrap:pretty">{{ t.heroSub }}</p>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px">
+<button onClick="{{ goRegister }}" style="height:46px;padding:0 20px;border-radius:11px;border:none;background:var(--accent);color:#0A1020;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap">{{ t.startFree }} {{ ic.arrowRight }}</button>
+<button onClick="{{ goPricing }}" style="height:46px;padding:0 20px;border-radius:11px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap">{{ t.seePricing }}</button>
+</div>
+<span style="font-size:13px;color:var(--muted)">{{ t.heroNote }}</span>
+</div>
+<div style="flex:1 1 440px;min-width:0;position:relative">
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 30px 60px -30px rgba(10,16,32,.35);display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600">{{ t.dashboard }}</span><span style="font-size:12px;color:var(--muted)">{{ t.d30 }}</span></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px">
+<sc-for list="{{ heroKpis }}" as="k" hint-placeholder-count="3"><div style="background:var(--surface2);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:var(--muted)">{{ k.label }}</span><span style="font-size:19px;font-weight:600">{{ k.value }}</span></div></sc-for>
+</div>
+<div style="height:140px;display:flex;align-items:flex-end;gap:4px"><sc-for list="{{ bars }}" as="b" hint-placeholder-count="30"><div style="flex:1;border-radius:3px 3px 1px 1px;height:{{ b.h }};background:{{ b.bg }}"></div></sc-for></div>
+<div style="display:flex;flex-direction:column"><sc-for list="{{ heroLow }}" as="r" hint-placeholder-count="2"><div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13px"><span style="color:var(--warn)">{{ ic.alert }}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</span><span style="color:var(--muted)">{{ r.left }}</span></div></sc-for></div>
+</div>
+</div>
+</section>
+<section style="border-top:1px solid var(--line);background:var(--surface)">
+<div style="max-width:1200px;margin:0 auto;padding:72px {{ L.pad }};display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:10px;max-width:620px"><h2 style="margin:0;font-size:32px;font-weight:600;letter-spacing:-.02em;line-height:1.2">{{ t.modulesTitle }}</h2><p style="margin:0;color:var(--ink2);font-size:16px">{{ t.modulesSub }}</p></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden">
+<sc-for list="{{ modules }}" as="m" hint-placeholder-count="6"><div style="background:var(--surface);padding:26px 24px;display:flex;flex-direction:column;gap:12px"><span style="width:38px;height:38px;border-radius:10px;background:var(--accentSoft);color:var(--accentText);display:flex;align-items:center;justify-content:center">{{ m.icon }}</span><span style="font-size:16px;font-weight:600">{{ m.title }}</span><span style="color:var(--muted);font-size:14px;text-wrap:pretty">{{ m.desc }}</span></div></sc-for>
+</div>
+</div>
+</section>
+<section style="max-width:1200px;margin:0 auto;padding:64px {{ L.pad }}">
+<div style="background:#0A1020;color:#F3F0E9;border-radius:20px;padding:44px 40px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:28px;font-weight:600;letter-spacing:-.02em">{{ t.ctaTitle }}</span><span style="color:#AEB5C4">{{ t.ctaSub }}</span></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap"><button onClick="{{ goRegister }}" style="height:46px;padding:0 20px;border-radius:11px;border:none;background:#6EE7B7;color:#0A1020;font-size:15px;font-weight:600;cursor:pointer">{{ t.startFree }}</button><button onClick="{{ goPricing }}" style="height:46px;padding:0 20px;border-radius:11px;border:1px solid #2E3A57;background:transparent;color:#F3F0E9;font-size:15px;cursor:pointer">{{ t.seePricing }}</button></div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ isPricing }}" hint-placeholder-val="{{ false }}">
+<section style="max-width:1200px;margin:0 auto;padding:64px {{ L.pad }} 24px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+<h1 style="margin:0;font-size:{{ L.h2 }};font-weight:600;letter-spacing:-.02em;line-height:1.15;text-wrap:balance">{{ t.pricingTitle }}</h1>
+<p style="margin:0;color:var(--ink2);font-size:16px">{{ t.pricingSub }}</p>
+<div style="display:flex;align-items:center;gap:10px;margin-top:10px"><div style="display:flex;padding:4px;gap:2px;background:var(--surface2);border-radius:11px"><sc-for list="{{ cycleTabs }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 16px;border:none;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for></div><span style="font-size:12.5px;font-weight:600;color:var(--accentText)">{{ t.save2 }}</span></div>
+</section>
+<section style="max-width:1200px;margin:0 auto;padding:24px {{ L.pad }};display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+<sc-for list="{{ planCards }}" as="p" hint-placeholder-count="4">
+<div style="background:var(--surface);border:{{ p.border }};border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:18px;position:relative">
+<div style="display:flex;justify-content:space-between;align-items:center;min-height:24px"><span style="font-size:15px;font-weight:600">{{ p.name }}</span><sc-if value="{{ p.popular }}"><span style="font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--accent);color:#0A1020">{{ t.popular }}</span></sc-if></div>
+<div style="display:flex;align-items:baseline;gap:4px"><span style="font-size:34px;font-weight:600;letter-spacing:-.02em">{{ p.price }}</span><span style="color:var(--muted)">{{ p.per }}</span></div>
+<button onClick="{{ goRegister }}" style="height:42px;border-radius:10px;border:{{ p.btnBorder }};background:{{ p.btnBg }};color:{{ p.btnFg }};font-size:14px;font-weight:600;cursor:pointer">{{ t.choose }}</button>
+<div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:18px"><sc-for list="{{ p.feats }}" as="f" hint-placeholder-count="3"><div style="display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink2)"><span style="color:var(--accentText);margin-top:2px">{{ is.check }}</span>{{ f }}</div></sc-for></div>
+</div>
+</sc-for>
+</section>
+<section style="max-width:1200px;margin:0 auto;padding:24px {{ L.pad }} 72px;display:flex;flex-direction:column;gap:16px">
+<h2 style="margin:16px 0 0;font-size:22px;font-weight:600">{{ t.compare }}</h2>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:14px;min-width:620px">
+<thead><tr><th style="text-align:left;padding:14px 18px;font-weight:500;color:var(--muted)"></th><sc-for list="{{ plans }}" as="p" hint-placeholder-count="4"><th style="text-align:left;padding:14px 18px;font-weight:600">{{ p.name }}</th></sc-for></tr></thead>
+<tbody><sc-for list="{{ compareRows }}" as="r" hint-placeholder-count="7"><tr><td style="padding:13px 18px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.l }}</td><sc-for list="{{ r.v }}" as="v" hint-placeholder-count="4"><td style="padding:13px 18px;border-top:1px solid var(--line)">{{ v }}</td></sc-for></tr></sc-for></tbody>
+</table>
+</div>
+<p style="margin:0;font-size:13px;color:var(--muted)">{{ t.priceNote }}</p>
+</section>
+</sc-if>
+
+<footer style="border-top:1px solid var(--line)"><div style="max-width:1200px;margin:0 auto;padding:28px {{ L.pad }};display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;font-size:13px;color:var(--muted)"><span>{{ t.rights }}</span><div style="flex:1"></div><span>{{ t.terms }}</span><span>{{ t.privacy }}</span><button onClick="{{ goAdmin }}" style="border:none;background:none;padding:0;cursor:pointer;color:var(--muted);font-size:13px">{{ t.adminLink }}</button></div></footer>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAuth }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;overflow:auto">
+<div style="flex:1 1 520px;display:flex;flex-direction:column;padding:28px {{ L.pad }};min-width:0">
+<button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;border:none;background:none;padding:0;cursor:pointer;color:var(--ink);align-self:flex-start">{{ logo }}<span style="font-size:16px;font-weight:700">Strata<span style="font-weight:400;color:var(--muted)">-softwareservice</span></span></button>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px 0">
+<div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:22px">
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:6px"><h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-.02em">{{ t.welcome }}</h1><span style="color:var(--muted)">{{ t.loginSub }}</span></div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.email }}<input value="nida@baansuan.co" readOnly="{{ true }}" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none" style-focus="border-color:var(--accentText);box-shadow:0 0 0 3px var(--accentSoft)"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)"><span style="display:flex;justify-content:space-between">{{ t.password }}<span style="color:var(--accentText);font-weight:500">{{ t.forgot }}</span></span><input type="password" value="••••••••••••" readOnly="{{ true }}" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none" style-focus="border-color:var(--accentText);box-shadow:0 0 0 3px var(--accentSoft)"></label>
+<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink2)"><input type="checkbox" checked="{{ true }}" readOnly="{{ true }}" style="accent-color:#0B7A52;width:16px;height:16px">{{ t.remember }}</label>
+<button onClick="{{ goDashboard }}" style="height:46px;border-radius:11px;border:none;background:var(--accent);color:#0A1020;font-size:15px;font-weight:600;cursor:pointer">{{ t.login }}</button>
+<span style="font-size:14px;color:var(--muted);text-align:center">{{ t.noAcc }} <button onClick="{{ setRegister }}" style="border:none;background:none;padding:0;cursor:pointer;color:var(--accentText);font-size:14px;font-weight:600">{{ t.register }}</button></span>
+</sc-if>
+<sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:6px"><h1 style="margin:0;font-size:28px;font-weight:600;letter-spacing:-.02em">{{ t.register }}</h1><span style="color:var(--muted)">{{ t.registerSub }}</span></div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.fullName }}<input placeholder="นิดา วัฒนกุล" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none" style-focus="border-color:var(--accentText);box-shadow:0 0 0 3px var(--accentSoft)"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.email }}<input placeholder="you@business.co.th" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none" style-focus="border-color:var(--accentText);box-shadow:0 0 0 3px var(--accentSoft)"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.password }}<input type="password" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none" style-focus="border-color:var(--accentText);box-shadow:0 0 0 3px var(--accentSoft)"><span style="font-weight:400;color:var(--muted);font-size:12.5px">{{ t.pwHint }}</span></label>
+<label style="display:flex;align-items:flex-start;gap:8px;font-size:13.5px;color:var(--ink2)"><input type="checkbox" style="accent-color:#0B7A52;width:16px;height:16px;margin-top:3px">{{ t.agree }}</label>
+<button onClick="{{ goOnboarding }}" style="height:46px;border-radius:11px;border:none;background:var(--accent);color:#0A1020;font-size:15px;font-weight:600;cursor:pointer">{{ t.register }}</button>
+<span style="font-size:14px;color:var(--muted);text-align:center">{{ t.haveAcc }} <button onClick="{{ setLogin }}" style="border:none;background:none;padding:0;cursor:pointer;color:var(--accentText);font-size:14px;font-weight:600">{{ t.login }}</button></span>
+</sc-if>
+</div>
+</div>
+</div>
+<sc-if value="{{ notMobile }}">
+<div style="flex:1 1 480px;margin:12px;border-radius:22px;background:#0A1020;color:#F3F0E9;padding:48px;display:flex;flex-direction:column;justify-content:space-between;gap:40px;min-width:0">
+<div>{{ logoLg }}</div>
+<div style="display:flex;flex-direction:column;gap:22px">
+<span style="font-size:30px;font-weight:600;line-height:1.25;letter-spacing:-.02em;text-wrap:balance">{{ t.authPanel }}</span>
+<div style="display:flex;flex-direction:column;gap:12px;color:#C9CDD6"><sc-for list="{{ authPoints }}" as="p" hint-placeholder-count="3"><div style="display:flex;gap:10px;align-items:center"><span style="color:#6EE7B7">{{ is.check }}</span>{{ p }}</div></sc-for></div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isOnb }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;overflow:auto;display:flex;flex-direction:column">
+<div style="display:flex;align-items:center;gap:16px;padding:18px {{ L.pad }};border-bottom:1px solid var(--line)">{{ logo }}<span style="font-weight:600">{{ t.onbTitle }}</span><div style="flex:1"></div><span style="font-size:13px;color:var(--muted)">{{ t.step }} {{ onbNum }} / 4</span></div>
+<div style="flex:1;display:flex;justify-content:center;padding:40px {{ L.pad }}">
+<div style="width:100%;max-width:620px;display:flex;flex-direction:column;gap:28px">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"><sc-for list="{{ stepItems }}" as="s" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:8px"><div style="height:4px;border-radius:4px;background:{{ s.bar }}"></div><span style="font-size:12.5px;font-weight:500;color:{{ s.fg }}">{{ s.label }}</span></div></sc-for></div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:20px">
+<sc-if value="{{ onb0 }}" hint-placeholder-val="{{ true }}">
+<h2 style="margin:0;font-size:22px;font-weight:600">{{ t.onbTitle }}</h2>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.bizName }}<input value="บ้านสวน คาเฟ่" readOnly="{{ true }}" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+<div style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.bizType }}<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ bizTypes }}" as="b" hint-placeholder-count="5"><button onClick="{{ b.onClick }}" style="height:36px;padding:0 14px;border-radius:999px;font-size:13.5px;cursor:pointer;border:{{ b.bd }};background:{{ b.bg }};color:var(--ink)">{{ b.label }}</button></sc-for></div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.taxId }}<input placeholder="0-1055-66012-34-5" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.currency }}<input value="THB ฿" readOnly="{{ true }}" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--ink2);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.timezone }}<input value="Asia/Bangkok" readOnly="{{ true }}" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--ink2);font-size:14px;outline:none"></label>
+</div>
+</sc-if>
+<sc-if value="{{ onb1 }}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0;font-size:22px;font-weight:600">{{ stepLabel }}</h2>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.branchName }}<input value="{{ branch0 }}" readOnly="{{ true }}" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.address }}<textarea readOnly="{{ true }}" rows="3" value="{{ branch0addr }}" style="padding:11px 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none;resize:none"></textarea></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.warehouseName }}<input value="{{ wh0 }}" readOnly="{{ true }}" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+</sc-if>
+<sc-if value="{{ onb2 }}" hint-placeholder-val="{{ false }}">
+<h2 style="margin:0;font-size:22px;font-weight:600">{{ stepLabel }}</h2>
+<span style="font-size:13.5px;color:var(--accentText);font-weight:500;margin-top:-10px">{{ t.trialNote }}</span>
+<div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ onbPlans }}" as="p" hint-placeholder-count="4"><button onClick="{{ p.onClick }}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;border:{{ p.bd }};background:{{ p.bg }};cursor:pointer;color:var(--ink);text-align:left"><span style="width:18px;height:18px;border-radius:50%;border:{{ p.radio }};flex:none"></span><span style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600;font-size:15px">{{ p.name }}</span><span style="font-size:13px;color:var(--muted)">{{ p.sub }}</span></span><span style="font-weight:600">{{ p.price }}<span style="font-weight:400;color:var(--muted);font-size:13px">{{ t.perMonth }}</span></span></button></sc-for></div>
+</sc-if>
+<sc-if value="{{ onb3 }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:8px 0">
+<span style="width:48px;height:48px;border-radius:14px;background:var(--accent);color:#0A1020;display:flex;align-items:center;justify-content:center">{{ ic.check }}</span>
+<h2 style="margin:0;font-size:24px;font-weight:600">{{ t.readyTitle }}</h2>
+<span style="color:var(--ink2)">{{ t.readySub }}</span>
+</div>
+</sc-if>
+<div style="display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:20px">
+<button onClick="{{ onbBack }}" style="height:42px;padding:0 16px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;cursor:pointer">{{ t.back }}</button>
+<button onClick="{{ onbNext }}" style="height:42px;padding:0 18px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px">{{ onbNextLabel }} {{ is.arrowRight }}</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex">
+<sc-if value="{{ showSidebar }}">
+<aside style="flex:none;width:{{ L.sideW }};border-right:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;padding:16px 12px;gap:14px;overflow:auto">
+<div style="display:flex;align-items:center;gap:10px;padding:4px 6px">{{ logo }}<sc-if value="{{ showLabels }}"><span style="font-size:15px;font-weight:700">Strata</span></sc-if></div>
+<sc-if value="{{ showLabels }}"><button style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);cursor:pointer;color:var(--ink);text-align:left"><span style="width:30px;height:30px;border-radius:8px;background:#0A1020;color:#6EE7B7;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">บส</span><span style="flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3"><span style="font-weight:600;font-size:13.5px">บ้านสวน คาเฟ่</span><span style="font-size:12px;color:var(--muted)">{{ branch0 }}</span></span>{{ is.chevronDown }}</button></sc-if>
+<nav style="display:flex;flex-direction:column;gap:14px;flex:1">
+<sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;gap:2px"><sc-if value="{{ g.showLabel }}"><span style="font-size:11.5px;font-weight:500;color:var(--muted);padding:0 10px 4px">{{ g.label }}</span></sc-if><sc-for list="{{ g.items }}" as="n" hint-placeholder-count="3"><button onClick="{{ n.onClick }}" title="{{ n.label }}" style="display:flex;align-items:center;gap:11px;height:38px;padding:0 10px;justify-content:{{ n.justify }};border:none;border-radius:9px;cursor:pointer;font-size:14px;font-weight:500;background:{{ n.bg }};color:{{ n.fg }}" style-hover="background:var(--surface2)">{{ n.icon }}<sc-if value="{{ n.showLabel }}"><span>{{ n.label }}</span></sc-if></button></sc-for></div></sc-for>
+</nav>
+<sc-if value="{{ showLabels }}"><div style="border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:12.5px"><div style="display:flex;justify-content:space-between"><span style="font-weight:600">Pro</span><span style="color:var(--muted)">{{ t.users }} 6/10</span></div><div style="height:5px;border-radius:5px;background:var(--surface2)"><div style="width:60%;height:100%;border-radius:5px;background:var(--accentText)"></div></div><button onClick="{{ goBilling }}" style="border:none;background:none;padding:0;text-align:left;cursor:pointer;color:var(--accentText);font-size:12.5px;font-weight:600">{{ t.billing }}</button></div></sc-if>
+<button onClick="{{ goAdmin }}" title="{{ t.adminLink }}" style="display:flex;align-items:center;gap:11px;height:38px;padding:0 10px;justify-content:{{ L.navJustify }};border:none;border-radius:9px;cursor:pointer;font-size:13.5px;background:transparent;color:var(--muted)" style-hover="background:var(--surface2)">{{ ic.shield }}<sc-if value="{{ showLabels }}"><span>{{ t.adminLink }}</span></sc-if></button>
+</aside>
+</sc-if>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<div style="flex:none;height:60px;display:flex;align-items:center;gap:12px;padding:0 {{ L.pad }};border-bottom:1px solid var(--line);background:var(--bg)">
+<sc-if value="{{ isMobile }}"><button onClick="{{ openNav }}" style="width:40px;height:40px;margin-left:-8px;border:none;background:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">{{ ic.menu }}</button>{{ logo }}</sc-if>
+<sc-if value="{{ notMobile }}"><div style="flex:1;max-width:420px;height:38px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--muted)">{{ is.search }}<span style="font-size:13.5px;flex:1">{{ t.search }}</span><span style="font:500 11px 'JetBrains Mono',monospace;padding:2px 6px;border:1px solid var(--line);border-radius:5px">⌘K</span></div></sc-if>
+<div style="flex:1"></div>
+<sc-if value="{{ notMobile }}"><button style="height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer">{{ is.store }}{{ branch0 }}{{ is.chevronDown }}</button></sc-if>
+<button onClick="{{ toggleNotif }}" style="position:relative;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">{{ is.bell }}<sc-if value="{{ hasUnread }}"><span style="position:absolute;top:6px;right:7px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid var(--surface)"></span></sc-if></button>
+<span style="width:36px;height:36px;border-radius:50%;background:var(--accentSoft);color:var(--accentText);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px">นด</span>
+</div>
+<div ref="{{ scroller }}" style="flex:1;min-height:0;overflow:auto">
+<div style="max-width:1320px;margin:0 auto;padding:{{ L.mainPad }}">
+<sc-if value="{{ sDashboard }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px">
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.greet }}</h1><span style="color:var(--muted)">บ้านสวน คาเฟ่ · {{ branch0 }}</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+<div style="display:flex;padding:3px;gap:2px;background:var(--surface2);border-radius:10px"><sc-for list="{{ rangeTabs }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 13px;border:none;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for></div>
+<button onClick="{{ goPos }}" style="height:38px;padding:0 15px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.plus }}{{ t.newSale }}</button>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:16px">
+<sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4"><div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--muted)">{{ k.label }}</span><span style="font-size:26px;font-weight:600;letter-spacing:-.015em">{{ k.value }}</span><span style="font-size:12.5px;color:var(--muted)"><span style="color:{{ k.dc }};font-weight:600">{{ k.delta }}</span> {{ t.vsPrev }}</span></div></sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px">
+<div style="flex:2 1 520px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600">{{ t.salesTrend }}</span><button onClick="{{ goReports }}" style="border:none;background:none;cursor:pointer;color:var(--accentText);font-size:13px;font-weight:600">{{ t.reports }}</button></div>
+<div style="height:220px;display:flex;align-items:flex-end;gap:5px;border-bottom:1px solid var(--line)"><sc-for list="{{ bars }}" as="b" hint-placeholder-count="30"><div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end"><div style="height:{{ b.h }};background:{{ b.bg }};border-radius:4px 4px 0 0" style-hover="opacity:.75"></div></div></sc-for></div>
+<div style="display:flex;gap:5px;margin-top:-8px"><sc-for list="{{ bars }}" as="b" hint-placeholder-count="30"><span style="flex:1;font-size:11px;color:var(--muted);white-space:nowrap;overflow:visible">{{ b.label }}</span></sc-for></div>
+</div>
+<div style="flex:1 1 300px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<span style="font-weight:600">{{ t.topProducts }}</span>
+<sc-for list="{{ topProducts }}" as="p" hint-placeholder-count="5"><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;gap:10px;font-size:13.5px"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.name }}</span><span style="font-weight:600">{{ p.rev }}</span></div><div style="height:6px;border-radius:6px;background:var(--surface2)"><div style="width:{{ p.w }};height:100%;border-radius:6px;background:var(--accentText)"></div></div><span style="font-size:12px;color:var(--muted)">{{ p.sub }}</span></div></sc-for>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 8px;display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:600">{{ t.lowStock }}</span><button onClick="{{ goInventory }}" style="border:none;background:none;cursor:pointer;color:var(--accentText);font-size:13px;font-weight:600">{{ t.viewAll }}</button></div>
+<sc-for list="{{ lowList }}" as="r" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)"><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font:400 11.5px 'JetBrains Mono',monospace;color:var(--muted)">{{ r.sku }}</span></div><span style="font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:{{ r.chip.bg }};color:{{ r.chip.fg }}">{{ r.left }}</span><button style="height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:12.5px;cursor:pointer">{{ t.reorder }}</button></div></sc-for>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 8px;display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:600">{{ t.outstanding }}</span><button onClick="{{ goInvoices }}" style="border:none;background:none;cursor:pointer;color:var(--accentText);font-size:13px;font-weight:600">{{ t.viewAll }}</button></div>
+<sc-for list="{{ outstanding }}" as="r" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)"><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.cust }}</span><span style="font:400 11.5px 'JetBrains Mono',monospace;color:var(--muted)">{{ r.no }} · {{ r.due }}</span></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px"><span style="font-weight:600;font-size:13.5px">{{ r.amt }}</span><span style="font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:{{ r.chip.bg }};color:{{ r.chip.fg }}">{{ r.chip.label }}</span></div></div></sc-for>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 8px;display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:600">{{ t.recentSales }}</span><button onClick="{{ goPos }}" style="border:none;background:none;cursor:pointer;color:var(--accentText);font-size:13px;font-weight:600">{{ t.viewAll }}</button></div>
+<sc-for list="{{ recentSales }}" as="r" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)"><span style="font:500 12px 'JetBrains Mono',monospace;color:var(--muted);width:42px">{{ r.time }}</span><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13.5px">{{ r.no }}</span><span style="font-size:12px;color:var(--muted)">{{ r.items }} · {{ r.method }}</span></div><span style="font-weight:600;font-size:13.5px">{{ r.total }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sProducts }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px">
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.products }}</h1><span style="color:var(--muted)">{{ t.productsUsed }} 12 / 5,000 · Pro</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.upload }}{{ t.importCsv }}</button>
+<button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.download }}{{ t.export }}</button>
+<button onClick="{{ openDrawer }}" style="height:38px;padding:0 15px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.plus }}{{ t.addProduct }}</button>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px">
+<div style="flex:1 1 260px;max-width:360px;height:40px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--muted)">{{ is.search }}<input value="{{ q }}" onChange="{{ onQ }}" placeholder="{{ t.search }}" style="flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--ink);font-size:14px"></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ catTabs }}" as="o" hint-placeholder-count="5"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 13px;border-radius:999px;border:{{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};font-size:13px;cursor:pointer">{{ o.label }}</button></sc-for></div>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.colProduct }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.category }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.price }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.cost }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.stock }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.status }}</th></tr></thead>
+<tbody><sc-for list="{{ prodRows }}" as="p" hint-placeholder-count="8"><tr style-hover="background:var(--bg)"><td style="padding:10px 16px;border-top:1px solid var(--line)"><div style="display:flex;align-items:center;gap:12px"><span style="width:38px;height:38px;border-radius:9px;flex:none;background:repeating-linear-gradient(135deg,var(--surface2) 0 6px,var(--line) 6px 7px)"></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-weight:500">{{ p.name }}</span><span style="font:400 11.5px 'JetBrains Mono',monospace;color:var(--muted)">{{ p.sku }}</span></div></div></td><td style="padding:10px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ p.cat }}</td><td style="padding:10px 16px;border-top:1px solid var(--line);text-align:right;font-weight:500">{{ p.price }}</td><td style="padding:10px 16px;border-top:1px solid var(--line);text-align:right;color:var(--muted)">{{ p.cost }}</td><td style="padding:10px 16px;border-top:1px solid var(--line);text-align:right">{{ p.stock }}</td><td style="padding:10px 16px;border-top:1px solid var(--line)"><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ p.chip.bg }};color:{{ p.chip.fg }};white-space:nowrap">{{ p.chip.label }}</span></td></tr></sc-for></tbody>
+</table>
+<sc-if value="{{ noProds }}"><div style="padding:40px;text-align:center;color:var(--muted)">—</div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ sInventory }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px">
+<h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.inventory }}</h1>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer">{{ t.adjust }}</button>
+<button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.transfer }}{{ t.transfer }}</button>
+<button style="height:38px;padding:0 15px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.plus }}{{ t.newPO }}</button>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px">
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--muted)">{{ t.stockValue }}</span><span style="font-size:24px;font-weight:600">{{ stockValue }}</span></div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--muted)">{{ t.lowCount }}</span><span style="font-size:24px;font-weight:600;color:var(--warn)">{{ lowCount }}</span></div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--muted)">{{ t.pendingPO }}</span><span style="font-size:24px;font-weight:600">2</span></div>
+</div>
+<div style="display:flex;padding:3px;gap:2px;background:var(--surface2);border-radius:10px;align-self:flex-start;width:fit-content;margin-bottom:14px;max-width:100%;overflow-x:auto"><sc-for list="{{ invTabsInv }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 13px;border:none;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;background:{{ o.bg }};color:{{ o.fg }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for></div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<sc-if value="{{ iStock }}" hint-placeholder-val="{{ true }}">
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:820px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.colProduct }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ wh0s }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ wh1s }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.onHand }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.reorderPoint }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.value }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.status }}</th></tr></thead>
+<tbody><sc-for list="{{ stockRows }}" as="r" hint-placeholder-count="8"><tr><td style="padding:11px 16px;border-top:1px solid var(--line)"><div style="display:flex;flex-direction:column"><span style="font-weight:500">{{ r.name }}</span><span style="font:400 11.5px 'JetBrains Mono',monospace;color:var(--muted)">{{ r.sku }}</span></div></td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right;color:var(--ink2)">{{ r.w0 }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right;color:var(--ink2)">{{ r.w1 }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right;font-weight:600">{{ r.total }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right;color:var(--muted)">{{ r.ro }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right">{{ r.value }}</td><td style="padding:11px 16px;border-top:1px solid var(--line)"><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ r.chip.bg }};color:{{ r.chip.fg }};white-space:nowrap">{{ r.chip.label }}</span></td></tr></sc-for></tbody>
+</table>
+</sc-if>
+<sc-if value="{{ iMoves }}" hint-placeholder-val="{{ false }}">
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:820px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.date }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.colProduct }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.type }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.qty }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.warehouse }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.ref }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.by }}</th></tr></thead>
+<tbody><sc-for list="{{ moveRows }}" as="r" hint-placeholder-count="6"><tr><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--muted);white-space:nowrap">{{ r.d }}</td><td style="padding:11px 16px;border-top:1px solid var(--line)">{{ r.name }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.type }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right;font-weight:600;color:{{ r.qc }}">{{ r.qty }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.wh }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);font:400 12px 'JetBrains Mono',monospace">{{ r.ref }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.by }}</td></tr></sc-for></tbody>
+</table>
+</sc-if>
+<sc-if value="{{ iPO }}" hint-placeholder-val="{{ false }}">
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.poNo }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.supplier }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.expected }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.total }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.status }}</th></tr></thead>
+<tbody><sc-for list="{{ poRows }}" as="r" hint-placeholder-count="3"><tr><td style="padding:12px 16px;border-top:1px solid var(--line);font:500 12.5px 'JetBrains Mono',monospace">{{ r.no }}</td><td style="padding:12px 16px;border-top:1px solid var(--line)">{{ r.sup }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.exp }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);text-align:right;font-weight:600">{{ r.total }}</td><td style="padding:12px 16px;border-top:1px solid var(--line)"><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ r.chip.bg }};color:{{ r.chip.fg }}">{{ r.chip.label }}</span></td></tr></sc-for></tbody>
+</table>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ sPos }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px">
+<h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.pos }}</h1>
+<div style="display:flex;padding:3px;gap:2px;background:var(--surface2);border-radius:10px"><sc-for list="{{ posTabs }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 14px;border:none;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for></div>
+</div>
+<sc-if value="{{ pRegister }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+<div style="flex:1 1 440px;min-width:0;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ posCats }}" as="o" hint-placeholder-count="5"><button onClick="{{ o.onClick }}" style="height:34px;padding:0 14px;border-radius:999px;border:{{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};font-size:13.5px;cursor:pointer">{{ o.label }}</button></sc-for></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">
+<sc-for list="{{ posTiles }}" as="p" hint-placeholder-count="12"><button onClick="{{ p.onClick }}" style="opacity:{{ p.op }};text-align:left;display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--surface);cursor:pointer;color:var(--ink)" style-hover="border-color:var(--accentText)" style-active="transform:scale(.98)"><span style="height:72px;border-radius:8px;background:repeating-linear-gradient(135deg,var(--surface2) 0 6px,var(--line) 6px 7px);display:flex;align-items:flex-end;justify-content:flex-end;padding:6px"><span style="font:500 10.5px 'JetBrains Mono',monospace;color:var(--muted)">{{ p.sku }}</span></span><span style="font-size:13.5px;font-weight:500;line-height:1.35;min-height:36px">{{ p.name }}</span><span style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600">{{ p.price }}</span><span style="font-size:11.5px;color:var(--warn);font-weight:600">{{ p.note }}</span></span></button></sc-for>
+</div>
+</div>
+<div style="flex:1 1 320px;max-width:420px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;position:sticky;top:0">
+<div style="padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600">{{ t.cart }}</span><span style="font:500 12px 'JetBrains Mono',monospace;color:var(--muted)">S-10489</span></div>
+<button style="margin:12px 18px 0;height:38px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;border:1px dashed var(--line2);background:transparent;color:var(--ink2);font-size:13.5px;cursor:pointer">{{ is.users }}{{ t.walkIn }}<span style="flex:1"></span>{{ is.chevronDown }}</button>
+<div style="padding:6px 18px;display:flex;flex-direction:column;min-height:120px">
+<sc-if value="{{ cartEmpty }}"><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13.5px;padding:30px 0">{{ t.emptyCart }}</div></sc-if>
+<sc-for list="{{ cartLines }}" as="c" hint-placeholder-count="2"><div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13.5px;font-weight:500">{{ c.name }}</span><span style="font-size:12px;color:var(--muted)">{{ c.unit }}</span></div><div style="display:flex;align-items:center;gap:2px;border:1px solid var(--line2);border-radius:9px"><button onClick="{{ c.dec }}" style="width:30px;height:30px;border:none;background:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">{{ is.minus }}</button><span style="min-width:20px;text-align:center;font-weight:600;font-size:13.5px">{{ c.qty }}</span><button onClick="{{ c.inc }}" style="width:30px;height:30px;border:none;background:none;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center">{{ is.plus }}</button></div><span style="width:72px;text-align:right;font-weight:600;font-size:13.5px">{{ c.line }}</span></div></sc-for>
+</div>
+<div style="padding:12px 18px;display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--ink2)">
+<div style="display:flex;justify-content:space-between"><span>{{ t.subtotal }}</span><span>{{ cartSub }}</span></div>
+<div style="display:flex;justify-content:space-between"><span>{{ t.vatIncl }}</span><span>{{ cartVat }}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;color:var(--ink);margin-top:4px"><span style="font-weight:600">{{ t.grandTotal }}</span><span style="font-size:24px;font-weight:600;letter-spacing:-.01em">{{ cartTotal }}</span></div>
+</div>
+<div style="padding:0 18px 18px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:12.5px;font-weight:500;color:var(--muted)">{{ t.payWith }}</span>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"><sc-for list="{{ payTabs }}" as="p" hint-placeholder-count="4"><button onClick="{{ p.onClick }}" style="height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:10px;border:{{ p.bd }};background:{{ p.bg }};color:{{ p.fg }};font-size:11.5px;font-weight:500;cursor:pointer">{{ p.icon }}{{ p.label }}</button></sc-for></div>
+<button onClick="{{ charge }}" style="height:50px;border-radius:12px;border:none;background:{{ chargeBg }};color:{{ chargeFg }};font-size:16px;font-weight:600;cursor:pointer">{{ t.charge }} {{ cartTotal }}</button>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ pHistory }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.saleNo }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.time }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.qty }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.method }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.cashier }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.total }}</th><th style="padding:12px 16px"></th></tr></thead>
+<tbody><sc-for list="{{ histRows }}" as="r" hint-placeholder-count="6"><tr><td style="padding:12px 16px;border-top:1px solid var(--line);font:500 12.5px 'JetBrains Mono',monospace">{{ r.no }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.time }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);text-align:right">{{ r.items }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.method }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.who }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);text-align:right;font-weight:600">{{ r.total }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);text-align:right"><button style="height:28px;padding:0 10px;border-radius:7px;border:1px solid var(--line2);background:var(--surface);color:var(--ink2);font-size:12.5px;cursor:pointer">{{ is.receipt }}</button></td></tr></sc-for></tbody>
+</table>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ sCustomers }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px">
+<h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.customers }}</h1>
+<div style="display:flex;gap:8px"><button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.upload }}{{ t.importCsv }}</button><button style="height:38px;padding:0 15px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.plus }}{{ t.addCustomer }}</button></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+<div style="flex:1 1 340px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px">
+<div style="height:40px;display:flex;align-items:center;gap:8px;padding:0 10px;margin:4px 4px 8px;border-radius:10px;background:var(--bg);color:var(--muted)">{{ is.search }}<span style="font-size:13.5px">{{ t.search }}</span></div>
+<sc-for list="{{ custRows }}" as="c" hint-placeholder-count="8"><button onClick="{{ c.onClick }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:10px;border:none;border-radius:10px;background:{{ c.bg }};cursor:pointer;color:var(--ink);text-align:left" style-hover="background:var(--surface2)"><span style="width:36px;height:36px;flex:none;border-radius:50%;background:var(--surface2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px">{{ c.ini }}</span><span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.n }}</span><span style="font-size:12px;color:var(--muted)">{{ c.group }} · {{ c.spend }}</span></span><sc-if value="{{ c.hasBal }}"><span style="font-size:12px;font-weight:600;color:var(--danger)">{{ c.bal }}</span></sc-if></button></sc-for>
+</div>
+<div style="flex:1.5 1 420px;min-width:0;display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px"><span style="width:52px;height:52px;border-radius:50%;background:#0A1020;color:#6EE7B7;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px">{{ cust.ini }}</span><div style="flex:1;min-width:180px;display:flex;flex-direction:column;gap:2px"><span style="font-size:19px;font-weight:600">{{ cust.n }}</span><span style="font-size:13px;color:var(--muted)">{{ cust.group }} · {{ t.memberSince }} {{ cust.since }}</span></div><button onClick="{{ goInvoices }}" style="height:36px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer">{{ t.createInvoice }}</button></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden"><sc-for list="{{ cust.stats }}" as="k" hint-placeholder-count="4"><div style="background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:var(--muted)">{{ k.l }}</span><span style="font-size:17px;font-weight:600">{{ k.v }}</span></div></sc-for></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px 28px;font-size:13.5px;color:var(--ink2)"><span style="display:flex;align-items:center;gap:8px">{{ is.mail }}{{ cust.email }}</span><span style="display:flex;align-items:center;gap:8px">{{ is.clock }}{{ cust.phone }}</span></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px">
+<div style="flex:1.4 1 280px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:4px">
+<span style="font-weight:600;margin-bottom:8px">{{ t.timeline }}</span>
+<sc-for list="{{ cust.timeline }}" as="e" hint-placeholder-count="4"><div style="display:flex;gap:12px"><div style="display:flex;flex-direction:column;align-items:center"><span style="width:9px;height:9px;border-radius:50%;background:{{ e.dot }};margin-top:6px"></span><span style="flex:1;width:1px;background:var(--line);margin:4px 0"></span></div><div style="flex:1;display:flex;justify-content:space-between;gap:10px;padding-bottom:14px"><div style="display:flex;flex-direction:column"><span style="font-size:13.5px">{{ e.title }}</span><span style="font-size:12px;color:var(--muted)">{{ e.when }}</span></div><span style="font-size:13.5px;font-weight:500">{{ e.amt }}</span></div></div></sc-for>
+</div>
+<div style="flex:1 1 220px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<span style="font-weight:600">{{ t.notes }}</span>
+<div style="padding:12px;border-radius:10px;background:var(--warnSoft);font-size:13.5px;color:var(--ink)">{{ cust.note }}<div style="font-size:11.5px;color:var(--muted);margin-top:6px">ภาคิน · 12 ต.ค.</div></div>
+<div style="height:40px;display:flex;align-items:center;padding:0 12px;border-radius:10px;border:1px solid var(--line2);font-size:13.5px;color:var(--muted)">{{ t.addNote }}</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sInvoices }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px">
+<h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.invoices }}</h1>
+<button style="height:38px;padding:0 15px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.plus }}{{ t.newInvoice }}</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px"><sc-for list="{{ invSummary }}" as="k" hint-placeholder-count="3"><div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--muted)">{{ k.l }}</span><span style="font-size:24px;font-weight:600">{{ k.v }}</span></div></sc-for></div>
+<div style="display:flex;padding:3px;gap:2px;background:var(--surface2);border-radius:10px;width:fit-content;max-width:100%;overflow-x:auto;margin-bottom:14px"><sc-for list="{{ invTabs }}" as="o" hint-placeholder-count="5"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 13px;border:none;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap;background:{{ o.bg }};color:{{ o.fg }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for></div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:700px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.invNo }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.customer }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.issued }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.due }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.amount }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.status }}</th></tr></thead>
+<tbody><sc-for list="{{ invRows }}" as="r" hint-placeholder-count="7"><tr onClick="{{ r.onClick }}" style="cursor:pointer" style-hover="background:var(--bg)"><td style="padding:12px 16px;border-top:1px solid var(--line);font:500 12.5px 'JetBrains Mono',monospace">{{ r.no }}</td><td style="padding:12px 16px;border-top:1px solid var(--line)">{{ r.cust }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.iss }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.due }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);text-align:right;font-weight:600">{{ r.amt }}</td><td style="padding:12px 16px;border-top:1px solid var(--line)"><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ r.chip.bg }};color:{{ r.chip.fg }}">{{ r.chip.label }}</span></td></tr></sc-for></tbody>
+</table>
+</div>
+</sc-if>
+
+<sc-if value="{{ sReports }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px">
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.reports }}</h1><span style="color:var(--muted)">{{ t.reportsSub }}</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.clock }}{{ t.rangeLabel }}{{ is.chevronDown }}</button><button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.download }}{{ t.exportCsv }}</button><button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.download }}{{ t.exportPdf }}</button></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:16px"><sc-for list="{{ repKpis }}" as="k" hint-placeholder-count="5"><div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12.5px;color:var(--muted)">{{ k.label }}</span><span style="font-size:22px;font-weight:600">{{ k.value }}</span><span style="font-size:12.5px;font-weight:600;color:{{ k.dc }}">{{ k.delta }}</span></div></sc-for></div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;margin-bottom:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600">{{ t.revTrend }}</span><span style="font-size:12.5px;color:var(--muted)">{{ t.rangeLabel }}</span></div>
+<div style="position:relative;height:220px;background:repeating-linear-gradient(to bottom,transparent 0 54px,var(--line) 54px 55px)">
+<svg viewBox="0 0 600 200" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"><path d="{{ areaD }}" style="fill:var(--accentSoft)"></path><polyline points="{{ linePts }}" style="fill:none;stroke:var(--accentText);stroke-width:2.2" vector-effect="non-scaling-stroke"></polyline></svg>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)"><sc-for list="{{ axis }}" as="a" hint-placeholder-count="6"><span>{{ a }}</span></sc-for></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px">
+<div style="flex:1 1 320px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px">
+<span style="font-weight:600">{{ t.byCategory }}</span>
+<sc-for list="{{ catBars }}" as="c" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;font-size:13.5px"><span style="color:var(--ink2)">{{ c.l }}</span><div style="height:22px;border-radius:6px;background:var(--surface2)"><div style="width:{{ c.w }};height:100%;border-radius:6px;background:var(--accent)"></div></div><span style="font-weight:600;min-width:84px;text-align:right">{{ c.v }}</span></div></sc-for>
+</div>
+<div style="flex:1 1 320px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px">
+<span style="font-weight:600">{{ t.byBranch }}</span>
+<sc-for list="{{ branchRows }}" as="b" hint-placeholder-count="2"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between;font-size:13.5px"><span style="font-weight:500">{{ b.n }}</span><span style="font-weight:600">{{ b.rev }}</span></div><div style="height:8px;border-radius:8px;background:var(--surface2)"><div style="width:{{ b.w }};height:100%;border-radius:8px;background:var(--ink)"></div></div><span style="font-size:12px;color:var(--muted)">{{ b.orders }} {{ t.orders }} · {{ t.aov }} {{ b.aov }} · {{ b.share }}</span></div></sc-for>
+</div>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<div style="padding:18px 16px 6px;font-weight:600">{{ t.topProducts }}</div>
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:10px 16px">{{ t.colProduct }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:10px 16px">{{ t.qty }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:10px 16px">{{ t.revenue }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:10px 16px">{{ t.gp }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:10px 16px">%</th></tr></thead>
+<tbody><sc-for list="{{ repTop }}" as="r" hint-placeholder-count="6"><tr><td style="padding:11px 16px;border-top:1px solid var(--line)">{{ r.name }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right">{{ r.sold }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right;font-weight:600">{{ r.rev }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right">{{ r.gp }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right;color:var(--muted)">{{ r.m }}</td></tr></sc-for></tbody>
+</table>
+<div style="padding:12px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)">{{ t.gpNote }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sBilling }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:18px"><h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.billing }}</h1><span style="color:var(--muted)">{{ t.billingSub }}</span></div>
+<div style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--warnSoft);color:var(--warn);font-size:13.5px;font-weight:500;margin-bottom:16px">{{ is.alert }}<span>{{ t.sandbox }}</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:28px">
+<div style="flex:1 1 300px;min-width:0;background:#0A1020;color:#F3F0E9;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<span style="font-size:13px;color:#AEB5C4">{{ t.currentPlan }}</span>
+<div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:30px;font-weight:600">Pro</span><span style="color:#AEB5C4">฿499{{ t.perMonth }}</span></div>
+<span style="font-size:13.5px;color:#C9CDD6">{{ t.renews }} 1 พ.ย. 2569 · {{ t.promptpay }}</span>
+<div style="display:flex;gap:8px;margin-top:auto;flex-wrap:wrap"><button style="height:38px;padding:0 14px;border-radius:10px;border:none;background:#6EE7B7;color:#0A1020;font-size:13.5px;font-weight:600;cursor:pointer">{{ t.changePlan }}</button><button style="height:38px;padding:0 14px;border-radius:10px;border:1px solid #2E3A57;background:transparent;color:#F3F0E9;font-size:13.5px;cursor:pointer">{{ t.cancelSub }}</button></div>
+</div>
+<div style="flex:1.4 1 340px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<sc-for list="{{ usage }}" as="u" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:7px"><div style="display:flex;justify-content:space-between;font-size:13.5px"><span style="color:var(--ink2)">{{ u.l }}</span><span style="font-weight:600">{{ u.v }}</span></div><div style="height:7px;border-radius:7px;background:var(--surface2)"><div style="width:{{ u.w }};height:100%;border-radius:7px;background:var(--accentText)"></div></div></div></sc-for>
+<div style="display:flex;align-items:center;gap:12px;padding-top:14px;border-top:1px solid var(--line)"><span style="width:40px;height:40px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--ink2)">{{ ic.qr }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:13.5px;font-weight:500">{{ t.payMethod }}: {{ t.promptpay }}</span><span style="font-size:12.5px;color:var(--muted)">{{ t.manualPay }}</span></div><button style="height:32px;padding:0 12px;border-radius:9px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13px;cursor:pointer">{{ t.update }}</button></div>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px"><span style="font-size:18px;font-weight:600">{{ t.changePlan }}</span><div style="display:flex;padding:3px;gap:2px;background:var(--surface2);border-radius:10px"><sc-for list="{{ cycleTabs }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.onClick }}" style="height:30px;padding:0 13px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for></div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:28px">
+<sc-for list="{{ billPlans }}" as="p" hint-placeholder-count="4"><div style="background:var(--surface);border:{{ p.border }};border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px"><span style="font-weight:600">{{ p.name }}</span><div style="display:flex;align-items:baseline;gap:4px"><span style="font-size:24px;font-weight:600">{{ p.price }}</span><span style="color:var(--muted);font-size:13px">{{ p.per }}</span></div><div style="display:flex;flex-direction:column;gap:6px;flex:1"><sc-for list="{{ p.feats }}" as="f" hint-placeholder-count="3"><span style="font-size:13px;color:var(--ink2);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--accentText);margin-top:2px">{{ is.check }}</span>{{ f }}</span></sc-for></div><button style="height:38px;border-radius:10px;border:{{ p.btnBorder }};background:{{ p.btnBg }};color:{{ p.btnFg }};font-size:13.5px;font-weight:600;cursor:pointer">{{ p.btnLabel }}</button></div></sc-for>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<div style="padding:18px 16px 6px;font-weight:600">{{ t.billHistory }}</div>
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px">
+<tbody><sc-for list="{{ billHist }}" as="r" hint-placeholder-count="5"><tr><td style="padding:12px 16px;border-top:1px solid var(--line);font:500 12.5px 'JetBrains Mono',monospace;color:var(--muted)">{{ r.no }}</td><td style="padding:12px 16px;border-top:1px solid var(--line)">{{ r.desc }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ r.method }}</td><td style="padding:12px 16px;border-top:1px solid var(--line);text-align:right;font-weight:600">{{ r.amt }}</td><td style="padding:12px 16px;border-top:1px solid var(--line)"><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ r.chip.bg }};color:{{ r.chip.fg }}">{{ r.chip.label }}</span></td><td style="padding:12px 16px;border-top:1px solid var(--line);text-align:right"><button style="height:28px;padding:0 10px;border-radius:7px;border:1px solid var(--line2);background:var(--surface);color:var(--ink2);font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">{{ is.download }}{{ t.receiptDl }}</button></td></tr></sc-for></tbody>
+</table>
+</div>
+</sc-if>
+
+<sc-if value="{{ sSettings }}" hint-placeholder-val="{{ false }}">
+<h1 style="margin:0 0 18px;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.settings }}</h1>
+<div style="display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto"><sc-for list="{{ setTabs }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="height:40px;padding:0 14px;border:none;background:none;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;color:{{ o.fg }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for></div>
+<sc-if value="{{ stOrg }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:20px;max-width:860px">
+<span style="font-weight:600;font-size:16px">{{ t.orgProfile }}</span>
+<div style="display:flex;align-items:center;gap:16px"><span style="width:64px;height:64px;border-radius:14px;background:#0A1020;color:#6EE7B7;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px">บส</span><button style="height:36px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.upload }}Logo</button></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.bizName }}<input value="บ้านสวน คาเฟ่" readOnly="{{ true }}" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.taxId }}<input value="0-1055-66012-34-5" readOnly="{{ true }}" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.language }}<input value="ไทย (th-TH)" readOnly="{{ true }}" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.invoicePrefix }}<input value="INV-{YYYY}-" readOnly="{{ true }}" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.currency }}<input value="THB ฿" readOnly="{{ true }}" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--ink2);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.timezone }}<input value="Asia/Bangkok (UTC+7)" readOnly="{{ true }}" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--ink2);font-size:14px;outline:none"></label>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--line);padding-top:18px"><button style="height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer">{{ t.cancel }}</button><button style="height:38px;padding:0 16px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:13.5px;font-weight:600;cursor:pointer">{{ t.save }}</button></div>
+</div>
+</sc-if>
+<sc-if value="{{ stStaff }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap"><span style="color:var(--muted)">6 / 10 {{ t.users }} · Pro</span><button style="height:38px;padding:0 15px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.mail }}{{ t.invite }}</button></div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.fullName }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.role }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.branch }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.status }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.lastActive }}</th><th></th></tr></thead>
+<tbody><sc-for list="{{ staffRows }}" as="m" hint-placeholder-count="6"><tr><td style="padding:11px 16px;border-top:1px solid var(--line)"><div style="display:flex;align-items:center;gap:11px"><span style="width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12.5px;flex:none">{{ m.ini }}</span><div style="display:flex;flex-direction:column"><span style="font-weight:500">{{ m.n }}</span><span style="font-size:12px;color:var(--muted)">{{ m.e }}</span></div></div></td><td style="padding:11px 16px;border-top:1px solid var(--line)"><span style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--line2);font-size:13px">{{ m.role }}{{ is.chevronDown }}</span></td><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ m.branch }}</td><td style="padding:11px 16px;border-top:1px solid var(--line)"><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ m.chip.bg }};color:{{ m.chip.fg }}">{{ m.chip.label }}</span></td><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--muted)">{{ m.la }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--muted)">{{ is.more }}</td></tr></sc-for></tbody>
+</table>
+</div>
+</sc-if>
+<sc-if value="{{ stBranches }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+<sc-for list="{{ branchCards }}" as="b" hint-placeholder-count="2"><div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center;gap:10px"><span style="width:36px;height:36px;border-radius:10px;background:var(--accentSoft);color:var(--accentText);display:flex;align-items:center;justify-content:center">{{ is.store }}</span><span style="font-weight:600;font-size:15px">{{ b.n }}</span></div><span style="font-size:13px;color:var(--ink2)">{{ b.addr }}</span><div style="display:flex;gap:18px;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px"><span>{{ b.staff }}</span><span>{{ b.rev }} · 30 {{ t.d30 }}</span></div></div></sc-for>
+<button style="border:1.5px dashed var(--line2);border-radius:14px;background:transparent;color:var(--muted);min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px;cursor:pointer">{{ ic.plus }}{{ t.addBranch }}<span style="font-size:12px">2 / 3 · Pro</span></button>
+</div>
+</sc-if>
+<sc-if value="{{ stSecurity }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px;max-width:860px">
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;align-items:center;gap:16px"><span style="width:40px;height:40px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex:none">{{ ic.lock }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-weight:600">{{ t.twoFA }}</span><span style="font-size:13px;color:var(--muted)">{{ t.twoFADesc }}</span></div><button onClick="{{ toggle2fa }}" style="width:44px;height:26px;border-radius:999px;border:none;padding:3px;background:{{ tgBg }};cursor:pointer;flex:none"><span style="display:block;width:20px;height:20px;border-radius:50%;background:#fff;transform:{{ tgX }};transition:transform .15s"></span></button></div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 8px">
+<span style="font-weight:600">{{ t.sessions }}</span>
+<sc-for list="{{ sessions }}" as="x" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--line);margin-top:10px"><span style="color:var(--muted)">{{ is.globe }}</span><div style="flex:1;display:flex;flex-direction:column"><span style="font-size:13.5px;font-weight:500">{{ x.d }}</span><span style="font-size:12.5px;color:var(--muted)">{{ x.l }} · {{ x.w }}</span></div><sc-if value="{{ x.notCur }}"><button style="height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--danger);font-size:12.5px;cursor:pointer">{{ t.revoke }}</button></sc-if><sc-if value="{{ x.cur }}"><span style="font-size:12px;font-weight:600;color:var(--accentText)">{{ t.thisDevice }}</span></sc-if></div></sc-for>
+</div>
+</div>
+</sc-if>
+</sc-if>
+</div>
+</div>
+<sc-if value="{{ isMobile }}"><div style="flex:none;height:64px;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);background:var(--surface)"><sc-for list="{{ bottomNav }}" as="n" hint-placeholder-count="5"><button onClick="{{ n.onClick }}" style="border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:500;color:{{ n.fg }}">{{ n.icon }}<span>{{ n.label }}</span></button></sc-for></div></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex">
+<sc-if value="{{ notMobile }}">
+<aside style="flex:none;width:{{ L.sideW }};background:#0A1020;color:#F3F0E9;display:flex;flex-direction:column;padding:16px 12px;gap:16px;overflow:auto">
+<div style="display:flex;align-items:center;gap:10px;padding:4px 6px">{{ logoAdmin }}<sc-if value="{{ showLabels }}"><span style="display:flex;flex-direction:column;line-height:1.2"><span style="font-weight:700;font-size:15px">Strata</span><span style="font-size:11.5px;color:#6EE7B7;font-weight:500">{{ t.platformAdmin }}</span></span></sc-if></div>
+<nav style="display:flex;flex-direction:column;gap:2px;flex:1"><sc-for list="{{ aNav }}" as="n" hint-placeholder-count="8"><button onClick="{{ n.onClick }}" title="{{ n.label }}" style="display:flex;align-items:center;gap:11px;height:38px;padding:0 10px;justify-content:{{ L.navJustify }};border:none;border-radius:9px;cursor:{{ n.cursor }};font-size:14px;font-weight:500;background:{{ n.bg }};color:{{ n.fg }}">{{ n.icon }}<sc-if value="{{ showLabels }}"><span>{{ n.label }}</span></sc-if></button></sc-for></nav>
+<button onClick="{{ goApp }}" title="{{ t.backToApp }}" style="display:flex;align-items:center;gap:11px;height:38px;padding:0 10px;justify-content:{{ L.navJustify }};border:1px solid #222C44;border-radius:9px;cursor:pointer;font-size:13.5px;background:transparent;color:#AEB5C4">{{ is.logout }}<sc-if value="{{ showLabels }}"><span>{{ t.backToApp }}</span></sc-if></button>
+</aside>
+</sc-if>
+<div ref="{{ scroller }}" style="flex:1;min-width:0;overflow:auto">
+<sc-if value="{{ isMobile }}"><div style="position:sticky;top:0;z-index:2;background:#0A1020;color:#F3F0E9;padding:12px 16px;display:flex;align-items:center;gap:10px">{{ logoAdmin }}<span style="font-weight:600;flex:1">{{ t.platformAdmin }}</span><button onClick="{{ goApp }}" style="border:none;background:none;color:#AEB5C4;cursor:pointer">{{ is.logout }}</button></div><div style="display:flex;gap:6px;padding:10px 16px;overflow-x:auto;border-bottom:1px solid var(--line)"><sc-for list="{{ aNav }}" as="n" hint-placeholder-count="8"><button onClick="{{ n.onClick }}" style="flex:none;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:var(--surface);color:var(--ink2);font-size:13px">{{ n.label }}</button></sc-for></div></sc-if>
+<div style="max-width:1320px;margin:0 auto;padding:{{ L.mainPad }}">
+<sc-if value="{{ sAdmin }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px"><div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.aOverview }}</h1><span style="color:var(--muted)">{{ t.adminSub }}</span></div><button style="height:38px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.download }}{{ t.export }}</button></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px"><sc-for list="{{ adminKpis }}" as="k" hint-placeholder-count="8"><div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12.5px;color:var(--muted)">{{ k.l }}</span><span style="font-size:22px;font-weight:600;letter-spacing:-.01em">{{ k.v }}</span><span style="font-size:12px;font-weight:600;color:{{ k.dc }}">{{ k.d }}</span></div></sc-for></div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px">
+<div style="flex:2 1 480px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<span style="font-weight:600">{{ t.mrrTrend }}</span>
+<div style="height:200px;display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid var(--line)"><sc-for list="{{ mrrBars }}" as="b" hint-placeholder-count="12"><div title="{{ b.v }}" style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end"><div style="height:{{ b.h }};background:{{ b.bg }};border-radius:5px 5px 0 0"></div></div></sc-for></div>
+<div style="display:flex;gap:8px;margin-top:-6px"><sc-for list="{{ mrrBars }}" as="b" hint-placeholder-count="12"><span style="flex:1;text-align:center;font-size:11px;color:var(--muted);overflow:hidden">{{ b.l }}</span></sc-for></div>
+</div>
+<div style="flex:1 1 300px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px">
+<span style="font-weight:600">{{ t.planMix }}</span>
+<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px"><sc-for list="{{ mix }}" as="m" hint-placeholder-count="5"><div style="width:{{ m.w }};background:{{ m.c }}"></div></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:10px"><sc-for list="{{ mix }}" as="m" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:10px;font-size:13.5px"><span style="width:10px;height:10px;border-radius:3px;background:{{ m.c }}"></span><span style="flex:1">{{ m.l }}</span><span style="font-weight:600">{{ m.n }}</span><span style="width:40px;text-align:right;color:var(--muted)">{{ m.p }}</span></div></sc-for></div>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px">
+<div style="flex:1 1 380px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 8px">
+<span style="font-weight:600">{{ t.aHealth }}</span>
+<sc-for list="{{ healthRows }}" as="h" hint-placeholder-count="6"><div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);margin-top:8px"><span style="width:8px;height:8px;border-radius:50%;background:{{ h.chip.fg }};flex:none"></span><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13.5px;font-weight:500">{{ h.n }}</span><span style="font-size:12.5px;color:var(--muted)">{{ h.d }}</span></div><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ h.chip.bg }};color:{{ h.chip.fg }};white-space:nowrap">{{ h.chip.label }}</span></div></sc-for>
+</div>
+<div style="flex:1 1 380px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 20px 8px">
+<span style="font-weight:600">{{ t.billingEvents }}</span>
+<sc-for list="{{ eventRows }}" as="e" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);margin-top:8px"><span style="width:8px;height:8px;border-radius:50%;background:{{ e.dot }};flex:none"></span><div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:13.5px;font-weight:500">{{ e.t }}</span><span style="font-size:12.5px;color:var(--muted)">{{ e.o }}</span></div><div style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-size:13.5px;font-weight:500">{{ e.a }}</span><span style="font-size:12px;color:var(--muted)">{{ e.w }}</span></div></div></sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ sAdminOrgs }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px"><h1 style="margin:0;font-size:26px;font-weight:600;letter-spacing:-.015em">{{ t.aOrgs }}</h1><span style="color:var(--muted)">612 · {{ t.orgsSub }}</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px">
+<div style="flex:1 1 280px;max-width:420px;height:40px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--muted)">{{ is.search }}<input value="{{ aq }}" onChange="{{ onAq }}" placeholder="{{ t.searchOrgs }}" style="flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--ink);font-size:14px"></div>
+<div style="display:flex;padding:3px;gap:2px;background:var(--surface2);border-radius:10px;max-width:100%;overflow-x:auto"><sc-for list="{{ afTabs }}" as="o" hint-placeholder-count="5"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 12px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;background:{{ o.bg }};color:{{ o.fg }};box-shadow:{{ o.sh }}">{{ o.label }}</button></sc-for></div>
+</div>
+<div style="background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:13.5px;min-width:860px">
+<thead><tr><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.aOrgs }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.owner }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.plan }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.users }}</th><th style="text-align:right;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">MRR</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.status }}</th><th style="text-align:left;font-weight:500;font-size:12.5px;color:var(--muted);padding:12px 16px">{{ t.created }}</th><th></th></tr></thead>
+<tbody><sc-for list="{{ orgRows }}" as="o" hint-placeholder-count="8"><tr style-hover="background:var(--bg)"><td style="padding:11px 16px;border-top:1px solid var(--line)"><div style="display:flex;flex-direction:column"><span style="font-weight:500">{{ o.n }}</span><span style="font:400 11.5px 'JetBrains Mono',monospace;color:var(--muted)">{{ o.id }}</span></div></td><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--ink2)">{{ o.o }}</td><td style="padding:11px 16px;border-top:1px solid var(--line)">{{ o.plan }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right">{{ o.u }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right;font-weight:600">{{ o.mrr }}</td><td style="padding:11px 16px;border-top:1px solid var(--line)"><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ o.chip.bg }};color:{{ o.chip.fg }};white-space:nowrap">{{ o.chip.label }}</span></td><td style="padding:11px 16px;border-top:1px solid var(--line);color:var(--muted);white-space:nowrap">{{ o.c }}</td><td style="padding:11px 16px;border-top:1px solid var(--line);text-align:right"><button style="height:28px;padding:0 10px;border-radius:7px;border:1px solid var(--line2);background:var(--surface);color:{{ o.actFg }};font-size:12.5px;cursor:pointer">{{ o.act }}</button></td></tr></sc-for></tbody>
+</table>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ notifOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeNotif }}" style="position:absolute;inset:0;z-index:20"></div>
+<div style="position:absolute;top:64px;right:16px;z-index:21;width:380px;max-width:calc(100% - 32px);background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 48px -12px rgba(10,16,32,.3);overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><span style="font-weight:600">{{ t.notifications }}</span><button onClick="{{ markAll }}" style="border:none;background:none;cursor:pointer;color:var(--accentText);font-size:13px;font-weight:600">{{ t.markAll }}</button></div>
+<sc-for list="{{ notifs }}" as="n" hint-placeholder-count="5"><div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:{{ n.bg }}"><span style="width:8px;height:8px;border-radius:50%;background:{{ n.dot }};margin-top:7px;flex:none"></span><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:13.5px;font-weight:500">{{ n.t }}</span><span style="font-size:12.5px;color:var(--muted)">{{ n.s }}</span></div><span style="font-size:12px;color:var(--muted);white-space:nowrap">{{ n.w }}</span></div></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ navOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeNav }}" style="position:absolute;inset:0;z-index:30;background:rgba(10,16,32,.45)"></div>
+<div style="position:absolute;top:0;bottom:0;left:0;z-index:31;width:290px;max-width:86%;background:var(--surface);padding:18px 14px;display:flex;flex-direction:column;gap:6px;overflow:auto">
+<div style="display:flex;align-items:center;gap:10px;padding:4px 8px 14px">{{ logo }}<span style="font-weight:700;flex:1">Strata</span><button onClick="{{ closeNav }}" style="border:none;background:none;color:var(--ink);cursor:pointer">{{ ic.x }}</button></div>
+<sc-for list="{{ drawerNav }}" as="n" hint-placeholder-count="9"><button onClick="{{ n.onClick }}" style="display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:500;background:{{ n.bg }};color:{{ n.fg }}">{{ n.icon }}<span>{{ n.label }}</span></button></sc-for>
+<div style="flex:1"></div>
+<button onClick="{{ goAdmin }}" style="display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border:none;border-radius:10px;cursor:pointer;font-size:14px;background:transparent;color:var(--muted)">{{ ic.shield }}{{ t.adminLink }}</button>
+<button onClick="{{ goHome }}" style="display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border:none;border-radius:10px;cursor:pointer;font-size:14px;background:transparent;color:var(--muted)">{{ ic.logout }}{{ t.logout }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;z-index:30;background:rgba(10,16,32,.45)"></div>
+<div style="position:absolute;top:0;bottom:0;right:0;z-index:31;width:460px;max-width:100%;background:var(--surface);display:flex;flex-direction:column;box-shadow:-20px 0 40px -20px rgba(10,16,32,.4)">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line)"><span style="font-size:17px;font-weight:600">{{ t.addProduct }}</span><button onClick="{{ closeDrawer }}" style="border:none;background:none;color:var(--ink);cursor:pointer">{{ ic.x }}</button></div>
+<div style="flex:1;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div style="height:120px;border-radius:12px;border:1.5px dashed var(--line2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:13px">{{ ic.upload }}{{ t.dropPhoto }}</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.productName }}<input placeholder="กาแฟคั่วอ่อน เชียงราย 250g" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none" style-focus="border-color:var(--accentText);box-shadow:0 0 0 3px var(--accentSoft)"></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">SKU<input value="BS-003" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.barcode }}<input placeholder="885…" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.category }}<select style="height:42px;padding:0 10px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px"><sc-for list="{{ catOpts }}" as="c" hint-placeholder-count="4"><option>{{ c }}</option></sc-for></select></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.supplier }}<input placeholder="ไร่กาแฟดอยช้าง" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.price }} (฿)<input placeholder="0.00" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.cost }} (฿)<input placeholder="0.00" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none"></label>
+</div>
+<label style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink)"><input type="checkbox" checked="{{ true }}" readOnly="{{ true }}" style="accent-color:#0B7A52;width:16px;height:16px">{{ t.trackStock }}</label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)">{{ t.reorderPoint }}<input value="10" style="height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;outline:none;max-width:160px"></label>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:16px 22px;border-top:1px solid var(--line)"><button onClick="{{ closeDrawer }}" style="height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;cursor:pointer">{{ t.cancel }}</button><button onClick="{{ closeDrawer }}" style="height:40px;padding:0 18px;border-radius:10px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer">{{ t.save }}</button></div>
+</div>
+</sc-if>
+
+<sc-if value="{{ receiptOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:40;background:rgba(10,16,32,.5);display:flex;align-items:center;justify-content:center;padding:20px">
+<div style="width:360px;max-width:100%;background:var(--surface);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:16px;align-items:stretch">
+<div style="display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center"><span style="width:52px;height:52px;border-radius:50%;background:var(--accent);color:#0A1020;display:flex;align-items:center;justify-content:center">{{ ic.check }}</span><span style="font-size:19px;font-weight:600">{{ t.paidOk }}</span><span style="font-size:30px;font-weight:600;letter-spacing:-.02em">{{ cartTotal }}</span><span style="font-size:13px;color:var(--muted)">S-10489 · {{ payLabel }}</span></div>
+<div style="border-top:1px dashed var(--line2);border-bottom:1px dashed var(--line2);padding:12px 0;display:flex;flex-direction:column;gap:6px"><sc-for list="{{ cartLines }}" as="c" hint-placeholder-count="2"><div style="display:flex;justify-content:space-between;font-size:13.5px"><span>{{ c.qty }} × {{ c.name }}</span><span>{{ c.line }}</span></div></sc-for><div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:4px"><span>{{ t.vatIncl }}</span><span>{{ cartVat }}</span></div></div>
+<div style="display:flex;gap:8px"><button style="flex:1;height:44px;border-radius:11px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px">{{ is.receipt }}{{ t.printReceipt }}</button><button onClick="{{ newSale }}" style="flex:1;height:44px;border-radius:11px;border:none;background:var(--accent);color:#0A1020;font-size:14px;font-weight:600;cursor:pointer">{{ t.newSaleBtn }}</button></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ invOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;z-index:40;background:rgba(10,16,32,.55);overflow:auto;padding:24px 16px">
+<div style="max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end">
+<button style="height:38px;padding:0 13px;border-radius:10px;border:none;background:#F3F0E9;color:#0A1020;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.download }}{{ t.downloadPdf }}</button>
+<sc-if value="{{ invDoc.isUnpaid }}"><button style="height:38px;padding:0 13px;border-radius:10px;border:none;background:#F3F0E9;color:#0A1020;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:7px">{{ is.send }}{{ t.sendReminder }}</button><button style="height:38px;padding:0 13px;border-radius:10px;border:none;background:#6EE7B7;color:#0A1020;font-size:13.5px;font-weight:600;cursor:pointer">{{ t.recordPayment }}</button></sc-if>
+<button onClick="{{ closeInv }}" style="width:38px;height:38px;border-radius:10px;border:none;background:#F3F0E9;color:#0A1020;cursor:pointer;display:flex;align-items:center;justify-content:center">{{ ic.x }}</button>
+</div>
+<div style="background:#FFFFFF;color:#0A1020;border-radius:6px;padding:44px 44px 36px;display:flex;flex-direction:column;gap:28px;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:20px">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="width:44px;height:44px;border-radius:10px;background:#0A1020;color:#6EE7B7;display:flex;align-items:center;justify-content:center;font-weight:700">บส</span><span style="font-weight:600;font-size:15px;margin-top:6px">บ้านสวน คาเฟ่ จำกัด</span><span style="font-size:12.5px;color:#5F6676;max-width:260px">49/12 ซ.สุขุมวิท 49 วัฒนา กรุงเทพฯ 10110<br>เลขประจำตัวผู้เสียภาษี 0-1055-66012-34-5</span></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right"><span style="font-size:20px;font-weight:600">{{ t.invoiceDoc }}</span><span style="font:500 13px 'JetBrains Mono',monospace">{{ invDoc.no }}</span><span style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:{{ invDoc.chip.bg }};color:{{ invDoc.chip.fg }}">{{ invDoc.chip.label }}</span></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:20px 48px;font-size:13px;border-top:1px solid #E6E2D8;padding-top:20px">
+<div style="display:flex;flex-direction:column;gap:3px;flex:1 1 220px"><span style="color:#5F6676;font-size:12px">{{ t.billTo }}</span><span style="font-weight:600;font-size:14px">{{ invDoc.cust }}</span><span style="color:#353D4F">{{ invDoc.email }} · {{ invDoc.phone }}</span></div>
+<div style="display:flex;flex-direction:column;gap:3px"><span style="color:#5F6676;font-size:12px">{{ t.issued }}</span><span style="font-weight:500">{{ invDoc.iss }}</span></div>
+<div style="display:flex;flex-direction:column;gap:3px"><span style="color:#5F6676;font-size:12px">{{ t.due }}</span><span style="font-weight:500">{{ invDoc.due }}</span></div>
+</div>
+<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;min-width:480px">
+<thead><tr style="background:#F5F3ED"><th style="text-align:left;padding:10px 12px;font-weight:500;color:#5F6676">{{ t.desc }}</th><th style="text-align:right;padding:10px 12px;font-weight:500;color:#5F6676">{{ t.qty }}</th><th style="text-align:right;padding:10px 12px;font-weight:500;color:#5F6676">{{ t.unitPrice }}</th><th style="text-align:right;padding:10px 12px;font-weight:500;color:#5F6676">{{ t.amount }}</th></tr></thead>
+<tbody><sc-for list="{{ invDoc.lines }}" as="l" hint-placeholder-count="3"><tr><td style="padding:11px 12px;border-bottom:1px solid #E6E2D8"><div style="display:flex;flex-direction:column"><span>{{ l.desc }}</span><span style="font:400 11px 'JetBrains Mono',monospace;color:#5F6676">{{ l.sku }}</span></div></td><td style="padding:11px 12px;border-bottom:1px solid #E6E2D8;text-align:right">{{ l.qty }}</td><td style="padding:11px 12px;border-bottom:1px solid #E6E2D8;text-align:right">{{ l.unit }}</td><td style="padding:11px 12px;border-bottom:1px solid #E6E2D8;text-align:right;font-weight:500">{{ l.amt }}</td></tr></sc-for></tbody>
+</table></div>
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;align-items:flex-end">
+<div style="display:flex;gap:12px;align-items:center;flex:1 1 260px"><span style="width:64px;height:64px;border-radius:6px;flex:none;background:repeating-linear-gradient(45deg,#EFECE4 0 5px,#E6E2D8 5px 6px);display:flex;align-items:center;justify-content:center;font:500 9px 'JetBrains Mono',monospace;color:#5F6676">QR</span><span style="font-size:12px;color:#5F6676;max-width:260px">{{ t.payInfo }}</span></div>
+<div style="display:flex;flex-direction:column;gap:6px;min-width:240px;font-size:13px">
+<div style="display:flex;justify-content:space-between;color:#353D4F"><span>{{ t.subtotal }}</span><span>{{ invDoc.sub }}</span></div>
+<div style="display:flex;justify-content:space-between;color:#353D4F"><span>{{ t.vat }}</span><span>{{ invDoc.vat }}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid #0A1020;padding-top:8px;margin-top:4px"><span style="font-weight:600">{{ t.grandTotal }}</span><span style="font-size:20px;font-weight:600">{{ invDoc.total }}</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ICONS={dashboard:'M3 3h7v9H3z M14 3h7v5h-7z M14 12h7v9h-7z M3 16h7v5H3z',package:'M16.5 9.4 7.5 4.21 M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96 12 12.01l8.73-5.05 M12 22.08V12',warehouse:'M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z M6 18h12 M6 14h12 M6 10h12',cart:'M8 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M19 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12',users:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',file:'M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z M14 2v4a2 2 0 0 0 2 2h4 M10 9H8 M16 13H8 M16 17H8',chart:'M3 3v18h18 M18 17V9 M13 17V5 M8 17v-3',card:'M2 5h20v14H2z M2 10h20',settings:'M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6',bell:'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9 M10.3 21a1.94 1.94 0 0 0 3.4 0',search:'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3',plus:'M12 5v14 M5 12h14',minus:'M5 12h14',x:'M18 6 6 18 M6 6l12 12',check:'M20 6 9 17l-5-5',chevronDown:'m6 9 6 6 6-6',chevronRight:'m9 18 6-6-6-6',download:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3',upload:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M17 8l-5-5-5 5 M12 3v12',menu:'M4 6h16 M4 12h16 M4 18h16',store:'M3 9l1.5-5h15L21 9 M4 9v11h16V9 M3 9h18 M9 20v-6h6v6',shield:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',building:'M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2 M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2 M10 6h4 M10 10h4 M10 14h4 M10 18h4',activity:'M22 12h-4l-3 9L9 3l-3 9H2',alert:'m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z M12 9v4 M12 17h.01',trend:'M22 7l-8.5 8.5-5-5L2 17 M16 7h6v6',arrowRight:'M5 12h14 M12 5l7 7-7 7',qr:'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h3v3h-3z M17 17h4v4h-4z',cash:'M2 6h20v12H2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M6 12h.01 M18 12h.01',transfer:'M8 3 4 7l4 4 M4 7h16 M16 21l4-4-4-4 M20 17H4',logout:'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9',mail:'M2 4h20v16H2z M22 7l-10 6L2 7',server:'M2 2h20v8H2z M2 14h20v8H2z M6 6h.01 M6 18h.01',database:'M12 8c4.97 0 9-1.34 9-3s-4.03-3-9-3-9 1.34-9 3 4.03 3 9 3z M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5 M3 12c0 1.66 4 3 9 3s9-1.34 9-3',more:'M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M19 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z M5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z',filter:'M22 3H2l8 9.46V19l4 2v-8.54L22 3z',send:'m22 2-7 20-4-9-9-4Z M22 2 11 13',lock:'M5 11h14v11H5z M7 11V7a5 5 0 0 1 10 0v4',receipt:'M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8 M12 17.5v-11',globe:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M2 12h20 M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',clock:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z M12 6v6l4 2'};
+const svgIcon=(n,s)=>React.createElement('svg',{width:s,height:s,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round',style:{flex:'none',display:'block'}},React.createElement('path',{d:ICONS[n]}));
+const IC={},IS={};Object.keys(ICONS).forEach(k=>{IC[k]=svgIcon(k,19);IS[k]=svgIcon(k,16)});
+const logoSvg=(h,outer)=>React.createElement('svg',{height:h,width:h*488/452,viewBox:'296 314 488 452',style:{display:'block',flex:'none'}},[['432,327 770,327 735,441 396,441',outer],['347,482 683,482 648,597 309,597','#6EE7B7'],['432,638 770,638 735,753 396,753',outer]].map((p,i)=>React.createElement('polygon',{key:i,points:p[0],fill:p[1],stroke:p[1],strokeWidth:14,strokeLinejoin:'round'})));
+const SCREENS=[['home','Marketing · Home'],['pricing','Marketing · Pricing'],['auth','Auth · Login / Register'],['onboarding','Onboarding'],['dashboard','App · Dashboard'],['pos','App · Sales / POS'],['products','App · Products'],['inventory','App · Inventory'],['customers','App · Customers'],['invoices','App · Invoices'],['reports','App · Reports'],['billing','App · Billing & plan'],['settings','App · Settings'],['admin','Super Admin · Overview'],['adminOrgs','Super Admin · Organizations']];
+const APP=['dashboard','pos','products','inventory','customers','invoices','reports','billing','settings'];
+const money=n=>'฿'+Math.round(n).toLocaleString('en-US');
+const money2=n=>'฿'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const rnd=i=>{const x=Math.sin(i*12.9898)*43758.5453;return x-Math.floor(x)};
+class Component extends DCLogic {
+  state={screen:'home',lang:'th',theme:'light',device:'desktop',authMode:'login',onb:0,biz:1,onbPlan:2,range:'30d',q:'',cat:'all',drawer:false,invTab:'stock',posTab:'pos',posCat:'all',cart:[{sku:'BS-010',qty:2},{sku:'BS-020',qty:1}],pay:'promptpay',receipt:false,cust:0,invF:'all',inv:null,cycle:'monthly',setTab:'org',twofa:true,notif:false,nav:false,read:false,aq:'',af:'all',ready:!!window.STRATA};
+  scroller=React.createRef();
+  componentDidMount(){
+    try{const s=JSON.parse(localStorage.getItem('strata-proto')||'null');if(s)this.setState(s);else if(window.innerWidth<700)this.setState({device:'mobile'})}catch(e){}
+    if(!window.STRATA)this._t=setInterval(()=>{if(window.STRATA){clearInterval(this._t);this.setState({ready:true})}},50);
+  }
+  componentWillUnmount(){clearInterval(this._t)}
+  componentDidUpdate(){const s=this.state,p=this._prev||{};
+    const cur={screen:s.screen,lang:s.lang,theme:s.theme,device:s.device};
+    if(['screen','lang','theme','device'].some(k=>p[k]!==cur[k])){try{localStorage.setItem('strata-proto',JSON.stringify(cur))}catch(e){}}
+    if(p.screen!==cur.screen&&this.scroller.current)this.scroller.current.scrollTop=0;
+    this._prev=cur;}
+  go=s=>()=>this.setState({screen:s,notif:false,nav:false,drawer:false,inv:null,receipt:false});
+  set=o=>()=>this.setState(o);
+  addCart=sku=>()=>this.setState(s=>{const c=s.cart.slice();const i=c.findIndex(x=>x.sku===sku);if(i>-1)c[i]={sku,qty:c[i].qty+1};else c.push({sku,qty:1});return{cart:c}});
+  decCart=sku=>()=>this.setState(s=>({cart:s.cart.map(x=>x.sku===sku?{sku,qty:x.qty-1}:x).filter(x=>x.qty>0)}));
+  renderVals(){
+    const D=window.STRATA;const s=this.state;
+    if(!D)return{L:{},t:{},ic:IC,is:IS};
+    const li=s.lang==='th'?0:1,loc=li?'en-US':'th-TH';
+    const pk=x=>Array.isArray(x)?x[li]:x;
+    const t={};Object.keys(D.T).forEach(k=>t[k]=D.T[k][li]);
+    const fd=(d,o)=>new Intl.DateTimeFormat(loc,Object.assign({timeZone:'Asia/Bangkok'},o||{day:'numeric',month:'short',year:'numeric'})).format(new Date(d.length>10?d.replace(' ','T')+':00+07:00':d+'T12:00:00+07:00'));
+    const fds=d=>fd(d,{day:'numeric',month:'short'});
+    const mob=s.device==='mobile',tab=s.device==='tablet',desk=s.device==='desktop';
+    const L={frameW:desk?'100%':tab?'834px':'390px',frameH:desk?'100%':tab?'1112px':'844px',frameR:desk?'0':tab?'22px':'44px',frameShadow:desk?'none':'0 0 0 10px #0b0d11, 0 0 0 11px #2a2f3a, 0 40px 80px rgba(0,0,0,.5)',stagePad:desk?'0':'40px 28px',pad:mob?'18px':'32px',mainPad:mob?'20px 16px 28px':'28px 32px 48px',h1:mob?'36px':tab?'48px':'60px',h2:mob?'30px':'44px',heroPad:mob?'40px':'80px',sideW:desk?'236px':'72px',navJustify:desk?'flex-start':'center'};
+    const chip=(k,label)=>{const m={ok:['var(--accentSoft)','var(--accentText)'],warn:['var(--warnSoft)','var(--warn)'],danger:['var(--dangerSoft)','var(--danger)'],info:['var(--infoSoft)','var(--info)'],neutral:['var(--surface2)','var(--muted)']}[k];return{label,bg:m[0],fg:m[1]}};
+    const seg=(arr,cur,key)=>arr.map(([v,label])=>{const on=cur===v;return{label,onClick:this.set({[key]:v}),bg:on?'var(--surface)':'transparent',fg:on?'var(--ink)':'var(--muted)',sh:on?'0 1px 2px rgba(10,16,32,.14)':'none'}});
+    const pills=(arr,cur,key)=>arr.map(([v,label])=>{const on=cur===v;return{label,onClick:this.set({[key]:v}),bg:on?'var(--ink)':'var(--surface)',fg:on?'var(--bg)':'var(--ink2)',bd:on?'1px solid var(--ink)':'1px solid var(--line2)'}});
+    const dark=(arr,cur,key)=>arr.map(([v,label])=>({label,onClick:this.set({[key]:v}),bg:cur===v?'#343a47':'transparent',fg:cur===v?'#fff':'#9aa1ad'}));
+    const P=D.products,bySku={};P.forEach(p=>bySku[p.sku]=p);
+    const pname=p=>p.n[li];
+    const stockChip=p=>p.stock==null?chip('neutral',t.mto):p.stock===0?chip('danger',t.out):p.stock<=p.ro?chip('warn',t.low):chip('ok',t.inStock);
+    const lineAmt=l=>l[0]==='cat'?l[2]:bySku[l[0]].price*l[1];
+    const invTotal=inv=>inv.lines.reduce((a,l)=>a+lineAmt(l),0);
+    const invSt={draft:'neutral',sent:'info',paid:'ok',overdue:'danger'};
+    const methodL={cash:t.cash,promptpay:t.promptpay,card:t.card,transfer:t.transferPay};
+    // dashboard
+    const KS={today:{rev:7840,ord:61,gp:4390,d:['+8.2%','+5.1%','+2.9%','+9.0%'],n:12},'7d':{rev:46210,ord:368,gp:25880,d:['+6.4%','+4.0%','+2.3%','+7.1%'],n:7},'30d':{rev:186420,ord:1482,gp:104950,d:['+12.4%','+14.5%','−1.8%','+11.2%'],n:30}};
+    const K=KS[s.range];
+    const kpis=[[t.revenue,money(K.rev)],[t.orders,K.ord.toLocaleString('en-US')],[t.aov,money(K.rev/K.ord)],[t.gp,money(K.gp)]].map((x,i)=>({label:x[0],value:x[1],delta:K.d[i],dc:K.d[i][0]==='+'?'var(--accentText)':'var(--danger)'}));
+    const vals=Array.from({length:K.n},(_,i)=>s.range==='today'?(i<2||i>9?0.35:0.6)+rnd(i+3)*0.4:0.55+rnd(i+(s.range==='7d'?40:1))*0.45+((i%7===5||i%7===6)?0.2:0));
+    const vmax=Math.max(...vals);
+    const bars=vals.map((v,i)=>({h:(v/vmax*100).toFixed(1)+'%',bg:i===vals.length-1?'var(--accent)':'var(--bar)',label:s.range==='today'?(i%3===0?(i+7)+':00':''):s.range==='7d'?fd(new Date(Date.UTC(2026,9,18+i)).toISOString().slice(0,10),{weekday:'short'}):(i%5===0?String(new Date(Date.UTC(2026,8,25+i)).getUTCDate()):'')}));
+    const top=P.slice().sort((a,b)=>b.sold*b.price-a.sold*a.price);const topMax=top[0].sold*top[0].price;
+    const topProducts=top.slice(0,5).map(p=>({name:pname(p),sub:p.sold+' '+t.sold,rev:money(p.sold*p.price),w:(p.sold*p.price/topMax*100).toFixed(0)+'%'}));
+    const lowList=P.filter(p=>p.stock!=null&&p.stock<=p.ro).map(p=>({name:pname(p),sku:p.sku,left:t.left+' '+p.stock,chip:stockChip(p),onClick:this.go('inventory')}));
+    const custName=i=>D.customers[i].n;
+    const outstanding=D.invoices.filter(i=>i.st==='sent'||i.st==='overdue').map(i=>({no:i.no,cust:custName(i.c),amt:money(invTotal(i)),due:fds(i.due),chip:chip(invSt[i.st],t[i.st])}));
+    const recentSales=D.sales.slice(0,5).map(x=>({no:x.no,time:x.time,total:money(x.total),method:methodL[x.m],items:x.items+' '+t.itemsN,who:x.who}));
+    // products
+    const catList=[['all',t.all]].concat(Object.keys(D.cats).map(k=>[k,D.cats[k][li]]));
+    const q=s.q.trim().toLowerCase();
+    const prodRows=P.filter(p=>(s.cat==='all'||p.cat===s.cat)&&(!q||p.n[0].toLowerCase().includes(q)||p.n[1].toLowerCase().includes(q)||p.sku.toLowerCase().includes(q))).map(p=>({sku:p.sku,name:pname(p),cat:D.cats[p.cat][li],price:money(p.price),cost:money(p.cost),margin:Math.round((1-p.cost/p.price)*100)+'%',stock:p.stock==null?'—':String(p.stock),chip:stockChip(p)}));
+    // inventory
+    const tracked=P.filter(p=>p.stock!=null);
+    const stockRows=tracked.map(p=>{const a=Math.ceil(p.stock*0.65);return{name:pname(p),sku:p.sku,w0:String(a),w1:String(p.stock-a),total:String(p.stock),ro:String(p.ro),value:money(p.stock*p.cost),chip:stockChip(p)}});
+    const stockValue=money(tracked.reduce((a,p)=>a+p.stock*p.cost,0));
+    const moveRows=D.moves.map(m=>({d:fds(m.d.slice(0,10))+' '+m.d.slice(11),name:pname(bySku[m.sku]),sku:m.sku,type:D.moveTypes[m.t][li],qty:(m.q>0?'+':'')+m.q,qc:m.q>0?'var(--accentText)':'var(--ink)',ref:pk(m.ref),by:m.by,wh:D.warehouses[m.wh][li]}));
+    const poRows=D.pos.map(p=>({no:p.no,sup:p.sup,exp:fd(p.exp),total:money(p.total),chip:chip(p.st==='received'?'ok':p.st==='partial'?'warn':'info',D.poSt[p.st][li])}));
+    // POS
+    const posTiles=P.filter(p=>s.posCat==='all'||p.cat===s.posCat).map(p=>({name:pname(p),price:money(p.price),sku:p.sku,note:p.stock!=null&&p.stock<=p.ro?(t.left+' '+p.stock):'',onClick:p.stock===0?undefined:this.addCart(p.sku),op:p.stock===0?'.45':'1'}));
+    const cartLines=s.cart.map(c=>{const p=bySku[c.sku];return{name:pname(p),qty:String(c.qty),unit:money(p.price),line:money(p.price*c.qty),inc:this.addCart(c.sku),dec:this.decCart(c.sku)}});
+    const cartTotal=s.cart.reduce((a,c)=>a+bySku[c.sku].price*c.qty,0);
+    const cartVat=cartTotal*7/107;
+    const payTabs=[['cash',t.cash,'cash'],['promptpay',t.promptpay,'qr'],['card',t.card,'card'],['transfer',t.transferPay,'transfer']].map(([v,label,ic])=>{const on=s.pay===v;return{label,icon:IS[ic],onClick:this.set({pay:v}),bg:on?'var(--accentSoft)':'var(--surface)',bd:on?'1.5px solid var(--accentText)':'1px solid var(--line2)',fg:on?'var(--accentText)':'var(--ink2)'}});
+    const histRows=D.sales.map(x=>({no:x.no,time:x.time,items:String(x.items),total:money(x.total),method:methodL[x.m],who:x.who}));
+    // customers
+    const ini=n=>n.replace(/^(บริษัท|ร้าน)\s*/,'').split(' ').slice(0,2).map(w=>w[0]).join('').slice(0,/[ก-๙]/.test(n)?1:2);
+    const custRows=D.customers.map((c,i)=>({n:c.n,ini:ini(c.n),group:D.groups[c.g][li],spend:money(c.spend),bal:c.bal?money(c.bal):'',hasBal:!!c.bal,bg:s.cust===i?'var(--surface2)':'transparent',onClick:this.set({cust:i})}));
+    const C=D.customers[s.cust];
+    const cInv=D.invoices.filter(i=>i.c===s.cust);
+    const cust={n:C.n,ini:ini(C.n),group:D.groups[C.g][li],email:C.email,phone:C.phone,since:fd(C.since),stats:[[t.lifetime,money(C.spend)],[t.visits,String(C.orders)],[t.balance,C.bal?money(C.bal):'฿0'],[t.lastVisit,fds(C.last)]].map(x=>({l:x[0],v:x[1]})),
+      timeline:cInv.map(i=>({title:i.no+' · '+t[i.st],when:fd(i.iss),amt:money(invTotal(i)),dot:i.st==='overdue'?'var(--danger)':i.st==='paid'?'var(--accentText)':'var(--info)'})).concat([{title:li?'In-store purchase':'ซื้อหน้าร้าน',when:fd(C.last),amt:money(215),dot:'var(--line2)'},{title:li?'Customer created':'เพิ่มเป็นลูกค้า',when:fd(C.since),amt:'',dot:'var(--line2)'}]),
+      note:C.g==='wholesale'?(li?'Deliver Mondays before 10:00. Net 30 terms.':'ส่งของทุกวันจันทร์ก่อน 10:00 น. เครดิต 30 วัน'):(li?'Prefers oat milk.':'ชอบนมโอ๊ต')};
+    // invoices
+    const invAll=D.invoices.map((i,idx)=>({...i,idx,total:invTotal(i)}));
+    const invTabs=seg(['all','draft','sent','paid','overdue'].map(k=>[k,(k==='all'?t.all:t[k])+' '+(k==='all'?invAll.length:invAll.filter(i=>i.st===k).length)]),s.invF,'invF');
+    const invRows=invAll.filter(i=>s.invF==='all'||i.st===s.invF).map(i=>({no:i.no,cust:custName(i.c),iss:fd(i.iss),due:fd(i.due),amt:money2(i.total),chip:chip(invSt[i.st],t[i.st]),onClick:this.set({inv:i.idx})}));
+    const sumBy=f=>money(invAll.filter(f).reduce((a,i)=>a+i.total,0));
+    const invSummary=[[t.totalOutstanding,sumBy(i=>i.st==='sent'||i.st==='overdue')],[t.overdue,sumBy(i=>i.st==='overdue')],[t.collected,sumBy(i=>i.st==='paid')]].map(x=>({l:x[0],v:x[1]}));
+    let invDoc=null;if(s.inv!=null){const I=invAll[s.inv],cc=D.customers[I.c],vat=I.total*7/107;invDoc={no:I.no,cust:cc.n,email:cc.email,phone:cc.phone,iss:fd(I.iss),due:fd(I.due),chip:chip(invSt[I.st],t[I.st]),lines:I.lines.map(l=>{const p=l[0]==='cat'?null:bySku[l[0]];return{desc:p?pname(p):D.catering[li],sku:p?p.sku:'SV-01',qty:String(l[1]),unit:money2(p?p.price:l[2]),amt:money2(lineAmt(l))}}),sub:money2(I.total-vat),vat:money2(vat),total:money2(I.total),isUnpaid:I.st==='sent'||I.st==='overdue'}}
+    // reports
+    const rv=Array.from({length:24},(_,i)=>5200+rnd(i+11)*3600+((i%7===2||i%7===3)?1800:0)+i*60);
+    const rmax=Math.max(...rv)*1.1;
+    const pts=rv.map((v,i)=>[(i/23*600).toFixed(1),(200-v/rmax*200).toFixed(1)]);
+    const linePts=pts.map(p=>p.join(',')).join(' ');
+    const areaD='M0,200 L'+pts.map(p=>p.join(',')).join(' L')+' L600,200 Z';
+    const catTot={};P.forEach(p=>catTot[p.cat]=(catTot[p.cat]||0)+p.sold*p.price);const catSum=Object.values(catTot).reduce((a,b)=>a+b,0);const catMax=Math.max(...Object.values(catTot));
+    const catBars=Object.keys(catTot).sort((a,b)=>catTot[b]-catTot[a]).map(k=>({l:D.cats[k][li],v:money(catTot[k]),share:Math.round(catTot[k]/catSum*100)+'%',w:(catTot[k]/catMax*100).toFixed(0)+'%'}));
+    const brTot=D.branches.reduce((a,b)=>a+b.rev,0);
+    const branchRows=D.branches.map(b=>({n:b.n[li],rev:money(b.rev),orders:b.orders.toLocaleString('en-US'),aov:money(b.rev/b.orders),share:Math.round(b.rev/brTot*100)+'%',w:(b.rev/brTot*100).toFixed(0)+'%',staff:b.staff+' '+t.staffN,addr:b.addr[li]}));
+    const repKpis=kpis.slice().concat([{label:t.newCustomers,value:'38',delta:'+9',dc:'var(--accentText)'}]).map(k=>s.range==='30d'?k:k);
+    const repTop=top.slice(0,6).map(p=>({name:pname(p),sku:p.sku,sold:String(p.sold),rev:money(p.sold*p.price),gp:money(p.sold*(p.price-p.cost)),m:Math.round((1-p.cost/p.price)*100)+'%'}));
+    const axis=[1,6,11,16,21,24].map(d=>fds('2026-10-'+String(d).padStart(2,'0')));
+    // plans
+    const annual=s.cycle==='annual';
+    const mkPlans=(billing)=>D.plans.map(p=>{const pop=p.id==='pro';const cur=billing&&p.id==='pro';return{name:p.name,price:money(annual?p.price*10:p.price),per:annual?t.perYear:t.perMonth,feats:p.f.map(f=>f[li]),popular:pop&&!billing,isCurrent:cur,btnLabel:cur?t.currentPlan:t.choose,border:pop?'1.5px solid var(--ink)':'1px solid var(--line)',btnBg:cur?'var(--surface2)':pop?'var(--accent)':'var(--surface)',btnFg:cur?'var(--muted)':pop?'#0A1020':'var(--ink)',btnBorder:pop||cur?'none':'1px solid var(--line2)'}});
+    const cycleTabs=seg([['monthly',t.monthly],['annual',t.annual]],s.cycle,'cycle');
+    const compareRows=D.compareRows.map(r=>({l:r.l[li],v:r.v.map(pk)}));
+    const onbPlans=D.plans.map((p,i)=>{const on=s.onbPlan===i;return{name:p.name,sub:p.f.slice(0,2).map(f=>f[li]).join(' · '),price:money(p.price),onClick:this.set({onbPlan:i}),bd:on?'1.5px solid var(--accentText)':'1px solid var(--line2)',bg:on?'var(--accentSoft)':'var(--surface)',radio:on?'5px solid var(--accentText)':'1.5px solid var(--line2)'}});
+    const usage=[[t.users,6,10],[t.products,12,5000],[t.branches,2,3]].map(([l,a,b])=>({l,v:a.toLocaleString('en-US')+' / '+b.toLocaleString('en-US'),w:Math.max(2,a/b*100).toFixed(0)+'%'}));
+    const billHist=[['2026-10-01','Pro',499,'promptpay'],['2026-09-01','Pro',499,'promptpay'],['2026-08-01','Pro',499,'transfer'],['2026-07-01','Starter',199,'promptpay'],['2026-06-01','Starter',199,'promptpay']].map(([d,p,a,m])=>({d:fd(d),desc:p+' · '+fd(d,{month:'long',year:'numeric'}),amt:money2(a),method:methodL[m],chip:chip('ok',t.paid),no:'SB-'+d.slice(0,7).replace('-','')}));
+    // settings
+    const setTabs=seg([['org',t.tOrg],['staff',t.tStaff],['branches',t.tBranches],['security',t.tSecurity]],s.setTab,'setTab').map(o=>({...o,sh:o.fg==='var(--ink)'?'inset 0 -2px 0 var(--ink)':'none'}));
+    const staffRows=D.staff.map(m=>({n:m.n,e:m.e,ini:ini(m.n),role:D.roles[m.r][li],branch:m.b<0?(li?'All branches':'ทุกสาขา'):D.branches[m.b].n[li],chip:chip(m.st==='active'?'ok':'warn',t[m.st]),la:m.la[li]}));
+    const sessions=D.sessions.map(x=>({d:x.d,l:x.l[li],w:x.w[li],cur:!!x.cur,notCur:!x.cur}));
+    // admin
+    const aNavDef=[['admin',t.aOverview,'dashboard'],['users',t.aUsers,'users'],['adminOrgs',t.aOrgs,'building'],['plans',t.aPlans,'package'],['payments',t.aPayments,'card'],['health',t.aHealth,'activity'],['audit',t.aAudit,'file'],['asettings',t.aSettings,'settings']];
+    const aNav=aNavDef.map(([v,label,ic])=>{const live=v==='admin'||v==='adminOrgs';const on=s.screen===v;return{label,icon:IS[ic],onClick:live?this.go(v):undefined,bg:on?'#1B2640':'transparent',fg:on?'#F3F0E9':live?'#AEB5C4':'#6B7489',cursor:live?'pointer':'default'}});
+    const adminKpis=[[t.totalUsers,'2,418','+86'],[t.totalOrgs,'612','+31'],[t.trials,'74','+12'],[t.activePaid,'289','+9'],['MRR','฿148,320','+4.2%'],['ARR','฿1,779,840','+4.2%'],[t.churn,'2.1%','−0.3'],[t.failedPay,'6','+2']].map((x,i)=>({l:x[0],v:x[1],d:x[2],dc:i===7?'var(--danger)':'var(--accentText)'}));
+    const mrrV=[92,96,99,104,109,113,118,124,131,137,142,148.3];
+    const mrrBars=mrrV.map((v,i)=>({h:(v/150*100).toFixed(1)+'%',bg:i===11?'var(--accent)':'var(--bar)',l:fd(new Date(Date.UTC(2025,10+i,15)).toISOString().slice(0,10),{month:'short'}),v:'฿'+v.toFixed(0)+'k'}));
+    const mix=[['Free',249,'var(--line2)'],[t.trial,74,'var(--info)'],['Starter',156,'#9ADBC0'],['Pro',103,'#6EE7B7'],['Business',30,'var(--ink)']].map(([l,n,c])=>({l,n:String(n),c,w:(n/612*100).toFixed(1)+'%',p:(n/612*100).toFixed(0)+'%'}));
+    const healthRows=D.health.map(h=>({n:pk(h.n),d:h.d[li],chip:chip(h.ok?'ok':'warn',h.ok?t.operational:t.warning),mono:typeof h.n==='string'}));
+    const eventRows=D.events.map(e=>({t:e.t[li],o:e.o,a:e.a,w:pk(e.w),dot:e.k==='ok'?'var(--accentText)':e.k==='danger'?'var(--danger)':'var(--muted)'}));
+    const orgSt={active:'ok',trial:'info',pastDue:'warn',suspended:'danger'};
+    const aq=s.aq.trim().toLowerCase();
+    const afTabs=seg([['all',t.all],['active',t.active],['trial',t.trial],['pastDue',t.pastDue],['suspended',t.suspended]],s.af,'af');
+    const orgRows=D.orgs.filter(o=>(s.af==='all'||o.st===s.af)&&(!aq||(o.n+o.id+o.o).toLowerCase().includes(aq))).map(o=>({n:o.n,id:o.id,o:o.o,plan:o.p,u:String(o.u),chip:chip(orgSt[o.st],t[o.st]),mrr:money(o.mrr),c:fd(o.c),act:o.st==='suspended'?t.restore:t.suspend,actFg:o.st==='suspended'?'var(--accentText)':'var(--danger)'}));
+    // nav
+    const navItem=(v,ic)=>{const on=s.screen===v;return{label:t[v],icon:IC[ic],onClick:this.go(v),bg:on?'var(--surface2)':'transparent',fg:on?'var(--ink)':'var(--ink2)',showLabel:desk,justify:desk?'flex-start':'center'}};
+    const navGroups=[{label:'',items:[navItem('dashboard','dashboard')]},{label:t.gCommerce,items:[navItem('pos','cart'),navItem('products','package'),navItem('inventory','warehouse'),navItem('customers','users'),navItem('invoices','file')]},{label:t.gInsight,items:[navItem('reports','chart')]},{label:t.gOrg,items:[navItem('billing','card'),navItem('settings','settings')]}].map(g=>({...g,showLabel:desk&&!!g.label}));
+    const bottomNav=[['dashboard','dashboard'],['pos','cart'],['products','package'],['invoices','file']].map(([v,ic])=>({label:t[v].split(' ')[0],icon:IC[ic],onClick:this.go(v),fg:s.screen===v?'var(--accentText)':'var(--muted)'})).concat([{label:t.more,icon:IC.more,onClick:this.set({nav:true}),fg:'var(--muted)'}]);
+    const drawerNav=navGroups.flatMap(g=>g.items).map(n=>({...n,showLabel:true,justify:'flex-start'}));
+    const notifs=D.notifs.map((n,i)=>({t:n.t[li],s:n.s[li],w:n.w[li],dot:n.k==='warn'?'var(--warn)':n.k==='danger'?'var(--danger)':'var(--info)',bg:!s.read&&i<3?'var(--accentSoft)':'transparent',unread:!s.read&&i<3}));
+    const sc=s.screen;
+    const titles={dashboard:t.dashboard};
+    return{
+      t,ic:IC,is:IS,L,screen:sc,theme:s.theme,logo:logoSvg(22,'var(--ink)'),logoLg:logoSvg(44,'#F3F0E9'),logoAdmin:logoSvg(22,'#F3F0E9'),
+      screenOpts:SCREENS.map(([v,l])=>({v,l})),onScreenSelect:e=>this.go(e.target.value)(),
+      devTabs:dark([['desktop','Desktop'],['tablet','Tablet'],['mobile','Mobile']],s.device,'device'),themeTabs:dark([['light','Light'],['dark','Dark']],s.theme,'theme'),langTabs:dark([['th','ไทย'],['en','EN']],s.lang,'lang'),
+      isMobile:mob,notMobile:!mob,showSidebar:!mob,showLabels:desk,
+      isPublic:sc==='home'||sc==='pricing',isHome:sc==='home',isPricing:sc==='pricing',isAuth:sc==='auth',isLogin:s.authMode==='login',isRegister:s.authMode==='register',isOnb:sc==='onboarding',isApp:APP.includes(sc),isAdmin:sc==='admin'||sc==='adminOrgs',
+      sDashboard:sc==='dashboard',sPos:sc==='pos',sProducts:sc==='products',sInventory:sc==='inventory',sCustomers:sc==='customers',sInvoices:sc==='invoices',sReports:sc==='reports',sBilling:sc==='billing',sSettings:sc==='settings',sAdmin:sc==='admin',sAdminOrgs:sc==='adminOrgs',
+      goHome:this.go('home'),goPricing:this.go('pricing'),goLogin:()=>this.setState({screen:'auth',authMode:'login'}),goRegister:()=>this.setState({screen:'auth',authMode:'register'}),goOnboarding:()=>this.setState({screen:'onboarding',onb:0}),goDashboard:this.go('dashboard'),goBilling:this.go('billing'),goAdmin:this.go('admin'),goPos:this.go('pos'),goInvoices:this.go('invoices'),goProducts:this.go('products'),goInventory:this.go('inventory'),goApp:this.go('dashboard'),goReports:this.go('reports'),
+      setRegister:this.set({authMode:'register'}),setLogin:this.set({authMode:'login'}),
+      heroKpis:kpis.slice(0,3),bars,heroLow:lowList.slice(0,2),modules:D.modules.map(m=>({icon:IC[m.ic],title:m.t[li],desc:m.d[li]})),
+      planCards:mkPlans(false),billPlans:mkPlans(true),plans:D.plans,compareRows,cycleTabs,
+      authPoints:[t.authP1,t.authP2,t.authP3],
+      onbNum:String(s.onb+1),onb0:s.onb===0,onb1:s.onb===1,onb2:s.onb===2,onb3:s.onb===3,stepLabel:D.steps[s.onb][li],
+      stepItems:D.steps.map((x,i)=>({label:x[li],bar:i<=s.onb?'var(--accentText)':'var(--line)',fg:i<=s.onb?'var(--ink)':'var(--muted)'})),
+      bizTypes:D.bizTypes.map((b,i)=>({label:b[li],onClick:this.set({biz:i}),bg:s.biz===i?'var(--accentSoft)':'var(--surface)',bd:s.biz===i?'1.5px solid var(--accentText)':'1px solid var(--line2)'})),
+      onbPlans,branch0:D.branches[0].n[li],branch0addr:D.branches[0].addr[li],wh0:D.warehouses[0][li],
+      onbBack:s.onb===0?this.set({screen:'auth',authMode:'register'}):this.set({onb:s.onb-1}),onbNext:s.onb===3?this.go('dashboard'):this.set({onb:s.onb+1}),onbNextLabel:s.onb===3?t.goDash:t.next,
+      navGroups,bottomNav,drawerNav,openNav:this.set({nav:true}),closeNav:this.set({nav:false}),navOpen:s.nav,
+      notifOpen:s.notif,toggleNotif:()=>this.setState({notif:!s.notif}),closeNotif:this.set({notif:false}),notifs,hasUnread:!s.read,markAll:this.set({read:true}),
+      rangeTabs:seg([['today',t.today],['7d',t.d7],['30d',t.d30]],s.range,'range'),kpis,topProducts,lowList,outstanding,recentSales,chartMax:money(K.rev/K.n*1.6),
+      catTabs:pills(catList,s.cat,'cat'),q:s.q,onQ:e=>this.setState({q:e.target.value}),prodRows,prodCount:String(prodRows.length),noProds:prodRows.length===0,openDrawer:this.set({drawer:true}),closeDrawer:this.set({drawer:false}),drawerOpen:s.drawer,catOpts:catList.slice(1).map(c=>c[1]),
+      invTabsInv:seg([['stock',t.tabStock],['moves',t.tabMoves],['po',t.tabPO]],s.invTab,'invTab'),iStock:s.invTab==='stock',iMoves:s.invTab==='moves',iPO:s.invTab==='po',stockRows,stockValue,lowCount:String(lowList.length),moveRows,poRows,wh0s:D.warehouses[0][li],wh1s:D.warehouses[1][li],
+      posTabs:seg([['pos',t.tabPos],['history',t.tabHistory]],s.posTab,'posTab'),pRegister:s.posTab==='pos',pHistory:s.posTab==='history',posCats:pills(catList,s.posCat,'posCat'),posTiles,cartLines,cartEmpty:s.cart.length===0,cartHas:s.cart.length>0,cartCount:String(s.cart.reduce((a,c)=>a+c.qty,0)),cartTotal:money2(cartTotal),cartSub:money2(cartTotal-cartVat),cartVat:money2(cartVat),payTabs,payLabel:methodL[s.pay],
+      charge:s.cart.length?this.set({receipt:true}):undefined,chargeBg:s.cart.length?'var(--accent)':'var(--surface2)',chargeFg:s.cart.length?'#0A1020':'var(--muted)',receiptOpen:s.receipt,newSale:this.set({receipt:false,cart:[]}),closeReceipt:this.set({receipt:false}),histRows,
+      custRows,cust,
+      invTabs,invRows,invSummary,invDoc,invOpen:!!invDoc,closeInv:this.set({inv:null}),
+      repKpis,linePts,areaD,axis,catBars,branchRows,repTop,
+      usage,billHist,
+      setTabs,stOrg:s.setTab==='org',stStaff:s.setTab==='staff',stBranches:s.setTab==='branches',stSecurity:s.setTab==='security',staffRows,sessions,branchCards:branchRows,
+      twofaOn:s.twofa,toggle2fa:()=>this.setState({twofa:!s.twofa}),tgBg:s.twofa?'var(--accentText)':'var(--line2)',tgX:s.twofa?'translateX(18px)':'translateX(0)',
+      aNav,adminKpis,mrrBars,mix,healthRows,eventRows,afTabs,orgRows,aq:s.aq,onAq:e=>this.setState({aq:e.target.value}),orgCount:String(orgRows.length)
+    };
+  }
+}
+</script>
+</body>
+</html>
