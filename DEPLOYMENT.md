@@ -28,6 +28,22 @@ adds the nginx site → requests a certificate (optional) → checks health.
 Re-running it is safe. Existing secrets, databases and other nginx sites are kept. If an installation already exists,
 the code is deployed through the update path, which takes a backup first.
 
+## Cloudflare Tunnel (no public IP / no open ports)
+1. Run the installer and answer:
+   - **Public domain:** your hostname, e.g. `itdev.in.th`
+   - **Other names/IPs:** the server's LAN IP (the default), so you can still reach it at `http://<LAN IP>` for testing
+   - **Behind Cloudflare Tunnel:** `yes`. This sets `BASE_URL=https://<domain>`, skips Let's Encrypt, and makes nginx tell
+     the app the request came in over https.
+2. In Cloudflare Zero Trust → Networks → Tunnels → *Public hostname* (Add published application):
+   - Subdomain: blank (or e.g. `app`), Domain: `itdev.in.th`, Path: blank
+   - Service URL: `http://localhost:80` if `cloudflared` runs on this server, otherwise `http://<server LAN IP>:80`
+3. Cloudflare SSL/TLS mode: Full or Flexible both work, because the tunnel connects to nginx over plain http inside the network.
+
+Session cookies are marked `Secure`, so logging in only works through `https://<domain>`, not through the LAN IP over plain http.
+
+To change domain or proxy settings later, re-run `bash deploy/install.sh`. Your previous answers are offered as defaults,
+and existing secrets and data are kept.
+
 ## Layout
 | Path | Contents |
 |---|---|

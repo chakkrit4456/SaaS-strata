@@ -21,6 +21,8 @@ BACKUP_DIR="/var/backups/${SERVICE_NAME}"
 BACKUP_RETENTION_DAYS="14"
 BACKUP_ONCALENDAR="*-*-* 02:30:00"
 ENABLE_HTTPS="no"
+BEHIND_PROXY="no"
+EXTRA_SERVER_NAMES=""
 KEEP_RELEASES="5"
 
 log()  { printf '\033[1;32m[strata]\033[0m %s\n' "$*"; }
@@ -84,4 +86,15 @@ ask() {
   fi
   read -r -p "$__q [${__def}]: " __ans
   printf -v "$__var" '%s' "${__ans:-$__def}"
+}
+
+ask_valid() {
+  # ask_valid VAR "Question" default REGEX "hint": repeat until the answer matches REGEX.
+  local __var="$1" __q="$2" __def="$3" __re="$4" __hint="$5"
+  while true; do
+    ask "$__var" "$__q" "$__def"
+    [[ "${!__var}" =~ $__re ]] && return 0
+    warn "Invalid value '${!__var}': $__hint"
+    [ "${STRATA_NONINTERACTIVE:-0}" = "1" ] && die "Invalid $__var in non-interactive mode."
+  done
 }

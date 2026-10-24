@@ -29,22 +29,35 @@ fi
 # ---------------------------------------------------------------- questions
 ADMIN_EMAIL="${ADMIN_EMAIL:-}"
 SMTP_HOST="${SMTP_HOST:-}"
-ask DOMAIN "Domain name (e.g. app.example.com, or server IP for HTTP only)" "${DOMAIN:-$(hostname -f 2>/dev/null || hostname)}"
+SERVER_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+NAME_RE='^[A-Za-z0-9.-]+$'
+ask_valid DOMAIN "Public domain (e.g. app.example.com, or the server IP if you have no domain)" \
+  "${DOMAIN:-${SERVER_IP:-localhost}}" "$NAME_RE" "letters, digits, dots and hyphens only"
+ask EXTRA_SERVER_NAMES "Other names/IPs nginx should answer to (space separated, blank for none)" \
+  "${EXTRA_SERVER_NAMES:-$SERVER_IP}"
+for n in $EXTRA_SERVER_NAMES; do [[ "$n" =~ $NAME_RE ]] || die "Invalid server name '$n'."; done
+ask_valid BEHIND_PROXY "Is HTTPS handled by Cloudflare Tunnel or another proxy in front? (yes/no)" \
+  "$BEHIND_PROXY" '^(yes|no)$' "answer yes or no"
 ask APP_DIR "Install path" "$APP_DIR"
-ask APP_PORT "Internal app port (bound to 127.0.0.1)" "$APP_PORT"
-ask DB_NAME "PostgreSQL database name" "$DB_NAME"
-ask DB_USER "PostgreSQL application role" "$DB_USER"
+ask_valid APP_PORT "Internal app port (bound to 127.0.0.1)" "$APP_PORT" '^[0-9]+$' "must be a number"
+ask_valid DB_NAME "PostgreSQL database name" "$DB_NAME" '^[a-z_][a-z0-9_]*$' \
+  "lowercase letters, digits and underscore only (no hyphens), e.g. strata"
+ask_valid DB_USER "PostgreSQL application role" "$DB_USER" '^[a-z_][a-z0-9_]*$' \
+  "lowercase letters, digits and underscore only"
 ask ADMIN_EMAIL "Platform administrator email" "$ADMIN_EMAIL"
-ask ENABLE_HTTPS "Request a Let's Encrypt certificate? (yes/no)" "$ENABLE_HTTPS"
+if [ "$BEHIND_PROXY" = "yes" ]; then
+  ENABLE_HTTPS="no"   # the proxy terminates TLS; no certificate is needed on this server
+else
+  ask_valid ENABLE_HTTPS "Request a Let's Encrypt certificate? (yes/no)" "$ENABLE_HTTPS" '^(yes|no)$' "answer yes or no"
+fi
 ask SMTP_HOST "SMTP host (blank to skip email for now)" "$SMTP_HOST"
 ask BACKUP_DIR "Backup directory" "$BACKUP_DIR"
 ask BACKUP_ONCALENDAR "Backup schedule (systemd OnCalendar)" "$BACKUP_ONCALENDAR"
 ask BACKUP_RETENTION_DAYS "Days to keep backups" "$BACKUP_RETENTION_DAYS"
 
-[[ "$APP_PORT" =~ ^[0-9]+$ ]] || die "Port must be a number."
-[[ "$DB_NAME" =~ ^[a-z_][a-z0-9_]*$ ]] || die "Database name must be lowercase letters, digits, underscore."
-[[ "$DB_USER" =~ ^[a-z_][a-z0-9_]*$ ]] || die "Database role must be lowercase letters, digits, underscore."
-[[ "$DOMAIN" =~ ^[A-Za-z0-9.-]+$ ]] || die "Invalid domain."
+SCHEME="http"
+if [ "$BEHIND_PROXY" = "yes" ] || [ "$ENABLE_HTTPS" = "yes" ]; then SCHEME="https"; fi
+BASE_URL="$SCHEME://$DOMAIN"
 
 # ---------------------------------------------------------------- packages
 log "Installing system packages"
@@ -91,6 +104,8 @@ BACKUP_DIR="$BACKUP_DIR"
 BACKUP_RETENTION_DAYS="$BACKUP_RETENTION_DAYS"
 BACKUP_ONCALENDAR="$BACKUP_ONCALENDAR"
 ENABLE_HTTPS="$ENABLE_HTTPS"
+BEHIND_PROXY="$BEHIND_PROXY"
+EXTRA_SERVER_NAMES="$EXTRA_SERVER_NAMES"
 KEEP_RELEASES="$KEEP_RELEASES"
 EOF
 chmod 0640 "$DEPLOY_CONF"; chown root:"$APP_USER" "$DEPLOY_CONF"
@@ -120,14 +135,13 @@ esac
 # ---------------------------------------------------------------- env file
 if [ ! -f "$ENV_FILE" ]; then
   log "Writing $ENV_FILE"
-  SCHEME="http"; [ "$ENABLE_HTTPS" = "yes" ] && SCHEME="https"
   umask 027
   cat > "$ENV_FILE" <<EOF
 # Strata-softwareservice production environment. Keep secret (mode 640, root:$APP_USER).
 NODE_ENV=production
 PORT=$APP_PORT
 HOSTNAME=127.0.0.1
-BASE_URL=$SCHEME://$DOMAIN
+BASE_URL=$BASE_URL
 POSTGRES_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME
 AUTH_SECRET=$(openssl rand -hex 32)
 STRATA_ADMIN_EMAIL=$ADMIN_EMAIL
@@ -146,6 +160,10 @@ STRATA_SMTP_PASSWORD=
 STRATA_SMTP_FROM=
 EOF
   umask 022
+elif [ "$(env_value BASE_URL)" != "$BASE_URL" ]; then
+  # BASE_URL is not a secret; keep it in sync with the domain answers.
+  log "Updating BASE_URL to $BASE_URL"
+  sed -i "s#^BASE_URL=.*#BASE_URL=$BASE_URL#" "$ENV_FILE"
 fi
 chown root:"$APP_USER" "$ENV_FILE"; chmod 0640 "$ENV_FILE"
 
@@ -174,7 +192,12 @@ systemctl start "${SERVICE_NAME}-backup.timer"
 
 # ---------------------------------------------------------------- nginx
 log "Configuring nginx site $DOMAIN"
-sed -e "s#@DOMAIN@#$DOMAIN#g" -e "s#@APP_PORT@#$APP_PORT#g" "$SCRIPT_DIR/nginx/${SERVICE_NAME}.conf" > "$NGINX_SITE.new"
+SERVER_NAMES="$(echo "$DOMAIN $EXTRA_SERVER_NAMES" | xargs -n1 | awk '!seen[$0]++' | xargs)"
+# shellcheck disable=SC2016  # literal nginx variable
+FORWARDED_PROTO='$scheme'
+[ "$BEHIND_PROXY" = "yes" ] && FORWARDED_PROTO='https'
+sed -e "s#@SERVER_NAMES@#$SERVER_NAMES#g" -e "s#@APP_PORT@#$APP_PORT#g" -e "s#@FORWARDED_PROTO@#$FORWARDED_PROTO#g" \
+  "$SCRIPT_DIR/nginx/${SERVICE_NAME}.conf" > "$NGINX_SITE.new"
 mv "$NGINX_SITE.new" "$NGINX_SITE"
 ln -sf "$NGINX_SITE" "$NGINX_LINK"
 if ! nginx -t 2>/tmp/strata-nginx-test.log; then
@@ -208,7 +231,7 @@ fi
 cat <<EOF
 
 Strata-softwareservice install finished.
-  URL:        http://$DOMAIN  (HTTPS: $HTTPS_STATUS)
+  URL:        $BASE_URL  (nginx answers: $SERVER_NAMES; Let's Encrypt: $HTTPS_STATUS; behind proxy: $BEHIND_PROXY)
   App dir:    $APP_DIR/current
   Secrets:    $ENV_FILE
   Service:    systemctl status ${SERVICE_NAME}
