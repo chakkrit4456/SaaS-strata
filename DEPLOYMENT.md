@@ -63,6 +63,8 @@ cd /root/strata-softwareservice && git pull && bash deploy/update.sh
 bash deploy/backup.sh                                     # manual backup
 bash deploy/restore.sh --test /var/backups/strata-softwareservice/<file>.dump   # test restore (safe)
 bash deploy/restore.sh /var/backups/strata-softwareservice/<file>.dump          # real restore (asks to confirm)
+bash deploy/reset-superadmin-password.sh              # reset/create Super Admin (chakkritnb4456@gmail.com), prompts
+bash deploy/reset-superadmin-password.sh --generate   # same, but generates a password and prints it once
 bash deploy/uninstall.sh            # remove services and site, keep data
 bash deploy/uninstall.sh --purge    # also drop the DB and app files (backups kept)
 ```

@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "lint:sh": "shellcheck deploy/*.sh",
+    "admin:reset-password": "tsx scripts/reset-superadmin-password.ts",
     "db:setup": "tsx lib/db/setup.ts",
     "db:seed": "tsx lib/db/seed.ts",
     "db:generate": "drizzle-kit generate",
