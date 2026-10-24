@@ -1,0 +1,10 @@
+[Unit]
+Description=Scheduled Strata-softwareservice database backup
+
+[Timer]
+OnCalendar=@BACKUP_ONCALENDAR@
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

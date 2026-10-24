@@ -30,8 +30,8 @@ Status key: `[ ]` todo, `[~]` in progress, `[x]` done and verified. Record block
 17. [ ] UI, Thai/English i18n, themes (Phase 8)
 18. [ ] Background jobs (Phase 10)
 19. [ ] API docs and security hardening (Phase 11)
-20. [ ] Linux deploy scripts, nginx, systemd (Phase 12)
-21. [ ] Backup, health checks, observability (Phase 13)
+20. [~] Linux deploy scripts, nginx, systemd (Phase 12): written and statically validated (shellcheck, nginx -t, systemd-analyze); not yet run on a clean Debian 13 server
+21. [~] Backup, health checks, observability (Phase 13): backup/restore/healthcheck scripts, backup timer, /api/health
 22. [ ] Unit, integration and E2E tests, plus production build (Phase 14)
 23. [ ] Documentation set (Phase 15)
 24. [ ] Final evidence-based report

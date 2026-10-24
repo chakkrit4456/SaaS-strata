@@ -1,0 +1,11 @@
+[Unit]
+Description=Strata-softwareservice database backup
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /etc/strata-softwareservice/backup.sh --tag scheduled
+Nice=10
+IOSchedulingClass=idle
+SyslogIdentifier=strata-softwareservice-backup

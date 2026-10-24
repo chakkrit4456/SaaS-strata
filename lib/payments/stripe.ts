@@ -7,8 +7,23 @@ import {
   updateTeamSubscription
 } from '@/lib/db/queries';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-04-30.basil'
+export const isStripeConfigured = () => Boolean(process.env.STRIPE_SECRET_KEY);
+
+let client: Stripe | undefined;
+
+// Created on first use so builds and servers without Stripe keys still start.
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop) {
+    if (!client) {
+      if (!isStripeConfigured()) {
+        throw new Error('Stripe is not configured: STRIPE_SECRET_KEY is not set');
+      }
+      client = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+        apiVersion: '2025-04-30.basil'
+      });
+    }
+    return Reflect.get(client, prop);
+  }
 });
 
 export async function createCheckoutSession({
@@ -147,6 +162,7 @@ export async function handleSubscriptionChange(
 }
 
 export async function getStripePrices() {
+  if (!isStripeConfigured()) return [];
   const prices = await stripe.prices.list({
     expand: ['data.product'],
     active: true,
@@ -165,6 +181,7 @@ export async function getStripePrices() {
 }
 
 export async function getStripeProducts() {
+  if (!isStripeConfigured()) return [];
   const products = await stripe.products.list({
     active: true,
     expand: ['data.default_price']
